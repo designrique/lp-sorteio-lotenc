@@ -29,27 +29,61 @@ const Index = () => {
 
   return (
     <>
+      {/* Header */}
+      <header className="bg-[#003366] text-white py-4">
+        <div className="container mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <i className="fas fa-star text-[#FFD700] text-2xl"></i>
+            <h1 className="text-2xl font-bold">Loteria Encruzilhada</h1>
+          </div>
+          <Button className="bg-[#FFD700] text-[#003366] hover:bg-[#FFD700]/90 font-semibold px-6 py-2">
+            FALE CONOSCO
+          </Button>
+        </div>
+      </header>
+
       {/* Hero Section - Split Layout */}
-      <section className="relative min-h-screen flex items-center bg-white overflow-hidden">
+      <section className="relative min-h-screen flex items-center bg-[#FFFF00] overflow-hidden">
         <div className="container mx-auto px-4 py-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
+            {/* Left Content - Man Illustration */}
+            <div className="relative animate-fade-in-up">
+              <div className="relative w-full h-96 lg:h-[500px]">
+                {/* Blue Circle with Man */}
+                <div className="absolute inset-0 bg-[#003366] rounded-full flex items-center justify-center transform -rotate-12 shadow-2xl">
+                  <div className="text-center space-y-4 text-white">
+                    <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mx-auto">
+                      <i className="fas fa-user text-[#003366] text-6xl"></i>
+                    </div>
+                    <h3 className="text-2xl font-bold">Homem Animado</h3>
+                    <p className="text-sm">Pronto para ganhar!</p>
+                  </div>
+                </div>
+                
+                {/* Floating Dollar Coin */}
+                <div className="absolute -top-8 -right-8 w-20 h-20 bg-[#FFD700] rounded-full animate-bounce flex items-center justify-center shadow-lg">
+                  <i className="fas fa-usd text-[#003366] text-3xl"></i>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Content */}
             <div className="space-y-8 animate-fade-in-up">
               <div className="space-y-4">
-                <h1 className="text-5xl lg:text-7xl font-bold text-[#B30000] leading-tight">
-                  Sua sorte está aqui!
+                <h1 className="text-5xl lg:text-7xl font-bold text-[#333333] leading-tight">
+                  Aqui todo dia é dia de mudar de vida!
                 </h1>
-                <p className="text-xl lg:text-2xl text-[#000000] font-medium">
-                  Essa é a sua chance de mudar de vida!
+                <p className="text-xl lg:text-2xl text-[#333333] font-medium">
+                  Aqui Compre agora seu bolão e não perca essa oportunidade de mudar de vida!
                 </p>
               </div>
               
               <div className="flex items-center space-x-4">
                 <Button
                   onClick={handleScrollToForm}
-                  className="bg-[#B30000] hover:bg-[#B30000]/90 text-white rounded-full px-8 py-6 text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg"
+                  className="bg-[#003366] hover:bg-[#003366]/90 text-white rounded-lg px-8 py-6 text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg"
                 >
-                  Compre agora seu bolão
+                  FALE AGORA
                   <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
                 </Button>
               </div>
@@ -58,60 +92,43 @@ const Index = () => {
               <div className="grid grid-cols-2 gap-4 pt-8">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-[#FFD700] rounded-full flex items-center justify-center">
-                    <i className="fas fa-star text-[#B30000] text-lg"></i>
+                    <i className="fas fa-star text-[#003366] text-lg"></i>
                   </div>
-                  <span className="text-[#000000] font-medium">Números únicos</span>
+                  <span className="text-[#333333] font-medium">Números únicos</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-[#FFD700] rounded-full flex items-center justify-center">
-                    <i className="fas fa-gift text-[#B30000] text-lg"></i>
+                    <i className="fas fa-gift text-[#003366] text-lg"></i>
                   </div>
-                  <span className="text-[#000000] font-medium">Prêmios incríveis</span>
+                  <span className="text-[#333333] font-medium">Prêmios incríveis</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-[#FFD700] rounded-full flex items-center justify-center">
-                    <i className="fas fa-usd text-[#B30000] text-lg"></i>
+                    <i className="fas fa-usd text-[#003366] text-lg"></i>
                   </div>
-                  <span className="text-[#000000] font-medium">Dinheiro fácil</span>
+                  <span className="text-[#333333] font-medium">Dinheiro fácil</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-[#FFD700] rounded-full flex items-center justify-center">
-                    <i className="fas fa-trophy text-[#B30000] text-lg"></i>
+                    <i className="fas fa-trophy text-[#003366] text-lg"></i>
                   </div>
-                  <span className="text-[#000000] font-medium">Grandes prêmios</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Content - Illustration */}
-            <div className="relative animate-fade-in-up">
-              <div className="relative w-full h-96 lg:h-[500px]">
-                {/* Placeholder for illustration */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700] to-[#B30000] rounded-3xl transform rotate-3 shadow-2xl">
-                  <div className="absolute inset-4 bg-white rounded-2xl flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="w-20 h-20 bg-[#B30000] rounded-full flex items-center justify-center mx-auto">
-                        <i className="fas fa-star text-white text-3xl"></i>
-                      </div>
-                      <h3 className="text-2xl font-bold text-[#B30000]">Sorte</h3>
-                      <p className="text-gray-600">Sua chance de vencer!</p>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Floating elements with Font Awesome icons */}
-                <div className="absolute -top-4 -right-4 w-16 h-16 bg-[#FFD700] rounded-full animate-pulse flex items-center justify-center">
-                  <i className="fas fa-usd text-[#B30000] text-xl"></i>
-                </div>
-                <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-[#B30000] rounded-full animate-bounce flex items-center justify-center">
-                  <i className="fas fa-coins text-[#FFD700] text-sm"></i>
-                </div>
-                <div className="absolute top-1/2 -left-8 w-8 h-8 bg-[#FFD700] rounded-full animate-ping flex items-center justify-center">
-                  <i className="fas fa-dice text-[#B30000] text-xs"></i>
+                  <span className="text-[#333333] font-medium">Grandes prêmios</span>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* WhatsApp Button */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <a 
+            href="https://wa.me/5511999999999" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="w-16 h-16 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300"
+          >
+            <i className="fab fa-whatsapp text-white text-2xl"></i>
+          </a>
         </div>
       </section>
 
@@ -119,15 +136,15 @@ const Index = () => {
       <section
         ref={infoRef}
         className={cn(
-          'py-16 md:py-24 bg-[#F2F2F2] transition-opacity duration-500',
+          'py-16 md:py-24 bg-[#FFFFF0] transition-opacity duration-500',
           isInfoVisible ? 'animate-fade-in-up' : 'opacity-0',
         )}
       >
         <div className="container mx-auto px-4 text-center max-w-4xl">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#B30000] mb-8">
+          <h2 className="text-4xl md:text-5xl font-bold text-[#003366] mb-8">
             Como Funciona?
           </h2>
-          <p className="text-xl text-[#000000] leading-relaxed">
+          <p className="text-xl text-[#333333] leading-relaxed">
             É simples! Preencha o formulário abaixo com seus dados para gerar um
             número da sorte único. O sorteio será realizado em breve e os
             vencedores serão contatados via WhatsApp e e-mail. Boa sorte!
