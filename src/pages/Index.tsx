@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { ArrowDown, Star, Gift } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SubscriptionForm } from '@/components/SubscriptionForm'
 import { ResultSection } from '@/components/ResultSection'
@@ -51,7 +50,7 @@ const Index = () => {
                   className="bg-[#B30000] hover:bg-[#B30000]/90 text-white rounded-full px-8 py-6 text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg"
                 >
                   Compre agora seu bolão
-                  <ArrowDown className="ml-2 h-5 w-5 animate-bounce" />
+                  <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
                 </Button>
               </div>
 
@@ -59,15 +58,27 @@ const Index = () => {
               <div className="grid grid-cols-2 gap-4 pt-8">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-[#FFD700] rounded-full flex items-center justify-center">
-                    <Star className="h-5 w-5 text-[#B30000]" />
+                    <i className="fas fa-star text-[#B30000] text-lg"></i>
                   </div>
                   <span className="text-[#000000] font-medium">Números únicos</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-[#FFD700] rounded-full flex items-center justify-center">
-                    <Gift className="h-5 w-5 text-[#B30000]" />
+                    <i className="fas fa-gift text-[#B30000] text-lg"></i>
                   </div>
                   <span className="text-[#000000] font-medium">Prêmios incríveis</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-[#FFD700] rounded-full flex items-center justify-center">
+                    <i className="fas fa-usd text-[#B30000] text-lg"></i>
+                  </div>
+                  <span className="text-[#000000] font-medium">Dinheiro fácil</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-[#FFD700] rounded-full flex items-center justify-center">
+                    <i className="fas fa-trophy text-[#B30000] text-lg"></i>
+                  </div>
+                  <span className="text-[#000000] font-medium">Grandes prêmios</span>
                 </div>
               </div>
             </div>
@@ -80,7 +91,7 @@ const Index = () => {
                   <div className="absolute inset-4 bg-white rounded-2xl flex items-center justify-center">
                     <div className="text-center space-y-4">
                       <div className="w-20 h-20 bg-[#B30000] rounded-full flex items-center justify-center mx-auto">
-                        <Star className="h-10 w-10 text-white" />
+                        <i className="fas fa-star text-white text-3xl"></i>
                       </div>
                       <h3 className="text-2xl font-bold text-[#B30000]">Sorte</h3>
                       <p className="text-gray-600">Sua chance de vencer!</p>
@@ -88,10 +99,16 @@ const Index = () => {
                   </div>
                 </div>
                 
-                {/* Floating elements */}
-                <div className="absolute -top-4 -right-4 w-16 h-16 bg-[#FFD700] rounded-full animate-pulse"></div>
-                <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-[#B30000] rounded-full animate-bounce"></div>
-                <div className="absolute top-1/2 -left-8 w-8 h-8 bg-[#FFD700] rounded-full animate-ping"></div>
+                {/* Floating elements with Font Awesome icons */}
+                <div className="absolute -top-4 -right-4 w-16 h-16 bg-[#FFD700] rounded-full animate-pulse flex items-center justify-center">
+                  <i className="fas fa-usd text-[#B30000] text-xl"></i>
+                </div>
+                <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-[#B30000] rounded-full animate-bounce flex items-center justify-center">
+                  <i className="fas fa-coins text-[#FFD700] text-sm"></i>
+                </div>
+                <div className="absolute top-1/2 -left-8 w-8 h-8 bg-[#FFD700] rounded-full animate-ping flex items-center justify-center">
+                  <i className="fas fa-dice text-[#B30000] text-xs"></i>
+                </div>
               </div>
             </div>
           </div>
