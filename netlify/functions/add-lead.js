@@ -101,9 +101,12 @@ export default handler(async (event, context) => {
       
       // Log dos dados recebidos do formulário
       console.log('Dados recebidos do formulário:', { name, whatsapp, email })
+      console.log('Nome específico (name):', name)
+      console.log('Nome para salvar (usuario):', dataToSave.usuario)
       console.log('Número da sorte (ID + 1000):', luckyNumber)
       
       console.log('Dados a serem salvos no NocoDB:', dataToSave)
+      console.log('JSON stringify dos dados:', JSON.stringify(dataToSave))
       console.log('URL do NocoDB:', `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`)
       
       const nocodbResponse = await fetch(`${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`, {
@@ -125,6 +128,10 @@ export default handler(async (event, context) => {
       console.log('Lead salvo no NocoDB:', savedData)
       console.log('Status da resposta:', nocodbResponse.status)
       console.log('Headers da resposta:', nocodbResponse.headers)
+      console.log('Dados salvos - usuario:', savedData.usuario)
+      console.log('Dados salvos - whatsapp:', savedData.whatsapp)
+      console.log('Dados salvos - email:', savedData.email)
+      console.log('Dados salvos - numero_sorte:', savedData.numero_sorte)
       
     } catch (nocodbError) {
       console.error('Erro na integração com NocoDB:', nocodbError)
