@@ -1,50 +1,12 @@
 [build]
-  # Comando de build - tenta pnpm primeiro, fallback para script personalizado
-  command = "chmod +x build.sh && ./build.sh"
-  
-  # Diretório de saída
+  command = "pnpm run build"
   publish = "dist"
-  
-  # Configurações de ambiente para resolver problemas de permissão
-  [build.environment]
-    # Configurar cache do npm para diretório com permissões adequadas
-    npm_config_cache = "/opt/buildhome/.npm-packages"
-    
-    # Configurar diretório de store do pnpm
-    PNPM_HOME = "/opt/buildhome/.pnpm"
-    PNPM_STORE_DIR = "/opt/buildhome/.pnpm-store"
-    
-    # Adicionar PNPM_HOME ao PATH
-    PATH = "/opt/buildhome/.pnpm:$PATH"
-    
-    # Configurar versão do Node.js
-    NODE_VERSION = "22.21.0"
-    
-    # Configurar versão do pnpm
-    PNPM_VERSION = "10.19.0"
-    
-    # Configurações adicionais para resolver problemas de permissão
-    npm_config_userconfig = "/opt/buildhome/.npmrc"
-    npm_config_cache = "/opt/buildhome/.npm"
 
-# Configurações de redirecionamento para SPA
+[build.environment]
+  NODE_VERSION = "22.21.0"
+  PNPM_VERSION = "10.19.0"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Configurações de cache
-[[headers]]
-  for = "/static/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/*.css"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
