@@ -1,6 +1,6 @@
-import { handler } from '@netlify/functions'
+const { handler } = require('@netlify/functions')
 
-export default handler(async (event, context) => {
+exports.handler = handler(async (event, context) => {
   // Configurar CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
