@@ -69,11 +69,11 @@ exports.handler = async (event, context) => {
           'xc-token': nocodbToken,
         },
         body: JSON.stringify({
-          name,
+          "T Title": name,
           whatsapp,
           email,
-          luckyNumber,
-          createdAt: new Date().toISOString(),
+          "numero_sorte": luckyNumber,
+          "criado_em": new Date().toISOString(),
         }),
       })
 
