@@ -37,14 +37,14 @@ Configure as seguintes variáveis no painel do Netlify (Site settings > Environm
 
 Certifique-se de que sua tabela tenha as seguintes colunas:
 
-| Coluna        | Tipo     | Descrição              |
-| ------------- | -------- | ---------------------- |
-| `#`           | Number   | ID automático          |
-| `T Title`     | Text     | Nome do usuário        |
-| `whatsapp`    | Text     | Número do WhatsApp     |
-| `email`       | Email    | Email do usuário       |
-| `# numero_sorte` | Number | Número da sorte gerado |
-| `criado_em`   | DateTime | Data de criação        |
+| Coluna           | Tipo     | Descrição              |
+| ---------------- | -------- | ---------------------- |
+| `#`              | Number   | ID automático          |
+| `usuario`        | Text     | Nome do usuário        |
+| `whatsapp`       | Text     | Número do WhatsApp     |
+| `email`          | Email    | Email do usuário       |
+| `# numero_sorte` | Number   | Número da sorte gerado |
+| `criado_em`      | DateTime | Data de criação        |
 
 ## Teste da Integração
 

@@ -62,9 +62,9 @@ export default handler(async (event, context) => {
     }
 
     try {
-      // Tentar diferentes formatos de nomes de campos
+      // Dados para salvar no NocoDB
       const dataToSave = {
-        "T Title": name,
+        "usuario": name,
         "whatsapp": whatsapp,
         "email": email,
         "numero_sorte": luckyNumber,
