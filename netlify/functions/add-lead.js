@@ -1,6 +1,4 @@
-const { handler } = require('@netlify/functions')
-
-exports.handler = handler(async (event, context) => {
+exports.handler = async (event, context) => {
   // Configurar CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -27,8 +25,7 @@ exports.handler = handler(async (event, context) => {
   }
 
   try {
-    console.log('Função add-lead executada com sucesso')
-    console.log('Event:', JSON.stringify(event, null, 2))
+    console.log('Função add-lead executada')
     
     // Parse do body
     const data = JSON.parse(event.body)
@@ -45,7 +42,7 @@ exports.handler = handler(async (event, context) => {
       }
     }
 
-    // Gerar número da sorte simples (sem NocoDB por enquanto)
+    // Gerar número da sorte
     const luckyNumber = Math.floor(Math.random() * 10000) + 1
 
     console.log('Número da sorte gerado:', luckyNumber)
@@ -72,4 +69,4 @@ exports.handler = handler(async (event, context) => {
       }),
     }
   }
-})
+}
