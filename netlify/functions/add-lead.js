@@ -40,10 +40,7 @@ export default handler(async (event, context) => {
       }
     }
 
-    // Gerar número da sorte
-    const luckyNumber = Math.floor(Math.random() * 10000) + 1
-
-    // Salvar no NocoDB
+    // Configurações do NocoDB
     const nocodbBaseUrl = process.env.NOCODB_BASE_URL
     const nocodbToken = process.env.NOCODB_TOKEN
     const nocodbProject = process.env.NOCODB_PROJECT || 'default'
@@ -61,6 +58,48 @@ export default handler(async (event, context) => {
       }
     }
 
+    // Função para verificar se número já existe
+    const checkDuplicateNumber = async (number) => {
+      try {
+        const checkResponse = await fetch(`${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}?where=(numero_sorte,eq,${number})`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'xc-token': nocodbToken,
+          },
+        })
+        
+        if (checkResponse.ok) {
+          const existingData = await checkResponse.json()
+          return existingData.list && existingData.list.length > 0
+        }
+        return false
+      } catch (error) {
+        console.error('Erro ao verificar número duplicado:', error)
+        return false
+      }
+    }
+
+    // Gerar número da sorte único
+    let luckyNumber
+    let isDuplicate = true
+    let attempts = 0
+    const maxAttempts = 10
+
+    do {
+      luckyNumber = Math.floor(Math.random() * 10000) + 1
+      isDuplicate = await checkDuplicateNumber(luckyNumber)
+      attempts++
+      
+      if (attempts >= maxAttempts) {
+        console.warn('Muitas tentativas de gerar número único, usando timestamp')
+        luckyNumber = Date.now() % 10000
+        break
+      }
+    } while (isDuplicate)
+
+    console.log(`Número da sorte gerado após ${attempts} tentativa(s):`, luckyNumber)
+
     try {
       // Dados para salvar no NocoDB
       const dataToSave = {
@@ -73,8 +112,10 @@ export default handler(async (event, context) => {
       
       // Log dos dados recebidos do formulário
       console.log('Dados recebidos do formulário:', { name, whatsapp, email })
+      console.log('Número da sorte gerado:', luckyNumber)
       
       console.log('Dados a serem salvos no NocoDB:', dataToSave)
+      console.log('URL do NocoDB:', `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`)
       
       const nocodbResponse = await fetch(`${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`, {
         method: 'POST',
