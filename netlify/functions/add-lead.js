@@ -58,10 +58,10 @@ export default handler(async (event, context) => {
       }
     }
 
-    // Função para verificar se número já existe
-    const checkDuplicateNumber = async (number) => {
+    // Função para obter o próximo ID disponível
+    const getNextId = async () => {
       try {
-        const checkResponse = await fetch(`${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}?where=(numero_sorte,eq,${number})`, {
+        const countResponse = await fetch(`${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}?limit=1&sort=-Id`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -69,36 +69,25 @@ export default handler(async (event, context) => {
           },
         })
         
-        if (checkResponse.ok) {
-          const existingData = await checkResponse.json()
-          return existingData.list && existingData.list.length > 0
+        if (countResponse.ok) {
+          const data = await countResponse.json()
+          if (data.list && data.list.length > 0) {
+            const lastId = data.list[0].Id || 0
+            return lastId + 1
+          }
         }
-        return false
+        return 1 // Primeiro registro
       } catch (error) {
-        console.error('Erro ao verificar número duplicado:', error)
-        return false
+        console.error('Erro ao obter próximo ID:', error)
+        return 1
       }
     }
 
-    // Gerar número da sorte único
-    let luckyNumber
-    let isDuplicate = true
-    let attempts = 0
-    const maxAttempts = 10
+    // Obter próximo ID e gerar número da sorte
+    const nextId = await getNextId()
+    const luckyNumber = nextId + 1000
 
-    do {
-      luckyNumber = Math.floor(Math.random() * 10000) + 1
-      isDuplicate = await checkDuplicateNumber(luckyNumber)
-      attempts++
-      
-      if (attempts >= maxAttempts) {
-        console.warn('Muitas tentativas de gerar número único, usando timestamp')
-        luckyNumber = Date.now() % 10000
-        break
-      }
-    } while (isDuplicate)
-
-    console.log(`Número da sorte gerado após ${attempts} tentativa(s):`, luckyNumber)
+    console.log(`Próximo ID: ${nextId}, Número da sorte: ${luckyNumber}`)
 
     try {
       // Dados para salvar no NocoDB
@@ -112,7 +101,7 @@ export default handler(async (event, context) => {
       
       // Log dos dados recebidos do formulário
       console.log('Dados recebidos do formulário:', { name, whatsapp, email })
-      console.log('Número da sorte gerado:', luckyNumber)
+      console.log('Número da sorte (ID + 1000):', luckyNumber)
       
       console.log('Dados a serem salvos no NocoDB:', dataToSave)
       console.log('URL do NocoDB:', `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`)
