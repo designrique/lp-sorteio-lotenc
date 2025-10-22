@@ -62,19 +62,27 @@ exports.handler = async (event, context) => {
     }
 
     try {
+      // Tentar diferentes formatos de nomes de campos
+      const dataToSave = {
+        "T Title": name,
+        "whatsapp": whatsapp,
+        "email": email,
+        "numero_sorte": luckyNumber,
+        "criado_em": new Date().toISOString(),
+      }
+      
+      // Log dos dados recebidos do formulário
+      console.log('Dados recebidos do formulário:', { name, whatsapp, email })
+      
+      console.log('Dados a serem salvos no NocoDB:', dataToSave)
+      
       const nocodbResponse = await fetch(`${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'xc-token': nocodbToken,
         },
-        body: JSON.stringify({
-          "T Title": name,
-          whatsapp,
-          email,
-          "numero_sorte": luckyNumber,
-          "criado_em": new Date().toISOString(),
-        }),
+        body: JSON.stringify(dataToSave),
       })
 
       if (!nocodbResponse.ok) {
@@ -85,6 +93,8 @@ exports.handler = async (event, context) => {
 
       const savedData = await nocodbResponse.json()
       console.log('Lead salvo no NocoDB:', savedData)
+      console.log('Status da resposta:', nocodbResponse.status)
+      console.log('Headers da resposta:', nocodbResponse.headers)
       
     } catch (nocodbError) {
       console.error('Erro na integração com NocoDB:', nocodbError)
