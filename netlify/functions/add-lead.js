@@ -42,10 +42,61 @@ exports.handler = async (event, context) => {
       }
     }
 
+    // Configurações do NocoDB
+    const nocodbBaseUrl = process.env.NOCODB_BASE_URL
+    const nocodbToken = process.env.NOCODB_TOKEN
+    const nocodbProject = process.env.NOCODB_PROJECT || 'default'
+    const nocodbTable = process.env.NOCODB_TABLE || 'leads'
+
+    console.log('Configurações NocoDB:', {
+      baseUrl: nocodbBaseUrl ? 'Configurado' : 'Não configurado',
+      token: nocodbToken ? 'Configurado' : 'Não configurado',
+      project: nocodbProject,
+      table: nocodbTable
+    })
+
     // Gerar número da sorte
     const luckyNumber = Math.floor(Math.random() * 10000) + 1
 
     console.log('Número da sorte gerado:', luckyNumber)
+
+    // Tentar salvar no NocoDB se configurado
+    if (nocodbBaseUrl && nocodbToken) {
+      try {
+        const dataToSave = {
+          "usuario": name,
+          "whatsapp": whatsapp,
+          "email": email,
+          "numero_sorte": luckyNumber,
+          "criado_em": new Date().toISOString(),
+        }
+        
+        console.log('Tentando salvar no NocoDB:', dataToSave)
+        
+        const nocodbResponse = await fetch(`${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'xc-token': nocodbToken,
+          },
+          body: JSON.stringify(dataToSave),
+        })
+
+        console.log('Status da resposta NocoDB:', nocodbResponse.status)
+
+        if (nocodbResponse.ok) {
+          const savedData = await nocodbResponse.json()
+          console.log('Dados salvos no NocoDB:', savedData)
+        } else {
+          const errorText = await nocodbResponse.text()
+          console.error('Erro ao salvar no NocoDB:', errorText)
+        }
+      } catch (nocodbError) {
+        console.error('Erro na integração com NocoDB:', nocodbError)
+      }
+    } else {
+      console.log('NocoDB não configurado - salvando apenas em memória')
+    }
 
     // Resposta de sucesso
     return {
