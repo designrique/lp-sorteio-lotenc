@@ -61,13 +61,13 @@ const Index = () => {
                   id="hero-title"
                   className="text-5xl lg:text-7xl font-bold text-[#333333] leading-tight hero-title-animation"
                 >
-                  Aqui todo dia é dia de mudar de vida!
+                  O Futuro te Espera! Concorra a uma Moto Elétrica 0KM com a Loteria Encruzilhada.
                 </h1>
                 <p 
                   id="hero-subtitle"
                   className="text-xl lg:text-2xl text-[#333333] font-medium hero-subtitle-animation"
                 >
-                  Aqui Compre agora seu bolão e não perca essa oportunidade de mudar de vida!
+                  Acelere sua vida com zero emissão! É simples, é rápido: cadastre-se agora e receba na hora o seu Número da Sorte para o grande sorteio.
                 </p>
               </div>
               
@@ -100,36 +100,30 @@ const Index = () => {
                   onClick={handleScrollToForm}
                   className="bg-[#0065b6] hover:bg-[#0065b6]/90 text-white rounded-lg px-8 py-6 text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg"
                 >
-                  FALE AGORA
+                  QUERO MEU NÚMERO DA SORTE AGORA!
                   <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
                 </Button>
               </div>
 
               {/* Features */}
-              <div className="grid grid-cols-2 gap-4 pt-8">
+              <div className="grid grid-cols-1 gap-4 pt-8">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-[#f5db17] rounded-full flex items-center justify-center">
-                    <i className="fas fa-star text-[#0065b6] text-lg"></i>
+                    <i className="fas fa-leaf text-[#0065b6] text-lg"></i>
                   </div>
-                  <span className="text-[#333333] font-medium">Números únicos</span>
+                  <span className="text-[#333333] font-medium">Zero Poluição: Contribua para um futuro sustentável</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-[#f5db17] rounded-full flex items-center justify-center">
-                    <i className="fas fa-gift text-[#0065b6] text-lg"></i>
+                    <i className="fas fa-gas-pump text-[#0065b6] text-lg"></i>
                   </div>
-                  <span className="text-[#333333] font-medium">Prêmios incríveis</span>
+                  <span className="text-[#333333] font-medium">Zero Combustível: Diga adeus aos postos de gasolina</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-[#f5db17] rounded-full flex items-center justify-center">
-                    <i className="fas fa-usd text-[#0065b6] text-lg"></i>
+                    <i className="fas fa-file-alt text-[#0065b6] text-lg"></i>
                   </div>
-                  <span className="text-[#333333] font-medium">Dinheiro fácil</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-[#f5db17] rounded-full flex items-center justify-center">
-                    <i className="fas fa-trophy text-[#0065b6] text-lg"></i>
-                  </div>
-                  <span className="text-[#333333] font-medium">Grandes prêmios</span>
+                  <span className="text-[#333333] font-medium">Zero Burocracia: Seu Número da Sorte é gerado automaticamente</span>
                 </div>
               </div>
             </div>
@@ -157,15 +151,58 @@ const Index = () => {
           isInfoVisible ? 'animate-fade-in-up' : 'opacity-0',
         )}
       >
-        <div className="container mx-auto px-4 text-center max-w-4xl">
+        <div className="container mx-auto px-4 text-center max-w-6xl">
           <h2 className="text-4xl md:text-5xl font-bold text-[#0065b6] mb-8">
-            Como Funciona?
+            Sua Chance de Mudar de Vida Chegou!
           </h2>
-          <p className="text-xl text-[#333333] leading-relaxed">
-            É simples! Preencha o formulário abaixo com seus dados para gerar um
-            número da sorte único. O sorteio será realizado em breve e os
-            vencedores serão contatados via WhatsApp e e-mail. Boa sorte!
+          <p className="text-xl text-[#333333] leading-relaxed mb-8">
+            Imagine-se pilotando uma moto elétrica de última geração, economizando combustível e contribuindo para um planeta mais verde. A Loteria Encruzilhada torna esse sonho realidade!
           </p>
+          
+          <div className="bg-white rounded-2xl p-8 shadow-lg">
+            <h3 className="text-3xl font-bold text-[#0065b6] mb-6">
+              Como Participar e Garantir Seu Número da Sorte
+            </h3>
+            
+            <div className="grid md:grid-cols-3 gap-8 text-left">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-[#0065b6] text-white rounded-full flex items-center justify-center font-bold">1</div>
+                  <h4 className="text-xl font-semibold text-[#333333]">Cadastro Rápido</h4>
+                </div>
+                <p className="text-[#333333]">
+                  Preencha o formulário ao lado com seu nome e e-mail.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-[#0065b6] text-white rounded-full flex items-center justify-center font-bold">2</div>
+                  <h4 className="text-xl font-semibold text-[#333333]">Número da Sorte Gerado</h4>
+                </div>
+                <p className="text-[#333333]">
+                  Imediatamente após o cadastro, seu Número da Sorte exclusivo será gerado e enviado para o seu e-mail.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-[#0065b6] text-white rounded-full flex items-center justify-center font-bold">3</div>
+                  <h4 className="text-xl font-semibold text-[#333333]">É Só Torcer</h4>
+                </div>
+                <p className="text-[#333333]">
+                  Pronto! Você já está concorrendo à Moto Elétrica 0KM no próximo sorteio da Loteria Encruzilhada.
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-8 p-4 bg-[#FFD700] rounded-lg">
+              <p className="text-[#333333] font-semibold text-lg">
+                <i className="fas fa-exclamation-triangle mr-2"></i>
+                ATENÇÃO: O sorteio será realizado em breve. Não perca tempo, os cadastros e a geração dos Números da Sorte são limitados!
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -178,6 +215,29 @@ const Index = () => {
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="bg-[#0065b6] text-white py-8">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <i className="fas fa-star text-[#f5db17] text-2xl"></i>
+            <h3 className="text-2xl font-bold">Loteria Encruzilhada</h3>
+          </div>
+          <p className="text-lg mb-4">
+            A sua chance de ganhar prêmios incríveis com total transparência e credibilidade.
+          </p>
+          <p className="text-sm">
+            Consulte o regulamento completo{' '}
+            <a href="#" className="text-[#f5db17] underline hover:text-white transition-colors">
+              [LINK PARA REGULAMENTO]
+            </a>
+          </p>
+          <p className="text-sm mt-4">
+            <i className="fas fa-shield-alt mr-2"></i>
+            Seu cadastro é seguro e seu Número da Sorte é único.
+          </p>
+        </div>
+      </footer>
     </>
   )
 }
