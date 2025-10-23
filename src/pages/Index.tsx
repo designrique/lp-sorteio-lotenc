@@ -65,16 +65,46 @@ const Index = () => {
             </div>
 
             {/* Right Content */}
-            <div className="space-y-8 animate-fade-in-up">
+            <div className="space-y-8">
               <div className="space-y-4">
-                <h1 className="text-5xl lg:text-7xl font-bold text-[#333333] leading-tight">
+                <h1 
+                  id="hero-title"
+                  className="text-5xl lg:text-7xl font-bold text-[#333333] leading-tight hero-title-animation"
+                >
                   Aqui todo dia é dia de mudar de vida!
                 </h1>
-                <p className="text-xl lg:text-2xl text-[#333333] font-medium">
+                <p 
+                  id="hero-subtitle"
+                  className="text-xl lg:text-2xl text-[#333333] font-medium hero-subtitle-animation"
+                >
                   Aqui Compre agora seu bolão e não perca essa oportunidade de mudar de vida!
                 </p>
               </div>
               
+              {/* Lucky Number Display */}
+              <div 
+                id="lucky-number"
+                className="lucky-number-animation particle-burst relative"
+              >
+                <div className="bg-[#0065b6] text-white rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-4 shadow-lg relative z-10">
+                  <span className="text-2xl font-bold">1001</span>
+                </div>
+                <p className="text-center text-[#333333] font-medium">
+                  Seu número da sorte
+                </p>
+                
+                {/* Sparkle Effect */}
+                <div 
+                  id="sparkle-effect"
+                  className="sparkle-effect-animation absolute inset-0 pointer-events-none"
+                >
+                  <div className="absolute top-2 left-2 w-2 h-2 bg-[#FFD700] rounded-full animate-ping"></div>
+                  <div className="absolute top-4 right-3 w-1 h-1 bg-[#FFD700] rounded-full animate-ping" style={{animationDelay: '0.2s'}}></div>
+                  <div className="absolute bottom-3 left-4 w-1.5 h-1.5 bg-[#FFD700] rounded-full animate-ping" style={{animationDelay: '0.4s'}}></div>
+                  <div className="absolute bottom-2 right-2 w-1 h-1 bg-[#FFD700] rounded-full animate-ping" style={{animationDelay: '0.6s'}}></div>
+                </div>
+              </div>
+
               <div className="flex items-center space-x-4">
                 <Button
                   onClick={handleScrollToForm}
