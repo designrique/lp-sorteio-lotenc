@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom'
 export default function Layout() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="w-full py-4 md:py-6">
+      <header>
         <div className="container mx-auto text-center">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground font-display">
             Loteria Encruzilhada
