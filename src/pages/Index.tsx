@@ -29,6 +29,19 @@ const Index = () => {
 
   return (
     <>
+      {/* Barra azul superior com logo */}
+      <section className="bg-[#0065b6] py-4">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center">
+            <img 
+              src="/logo-loteria-encruzilhada.png" 
+              alt="Loteria Encruzilhada" 
+              className="h-16 w-auto"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Hero Section - Split Layout */}
       <section className="relative min-h-screen flex items-center bg-[#f5db17] overflow-hidden">
         <div className="container mx-auto px-4 py-16">
@@ -75,19 +88,60 @@ const Index = () => {
 
             {/* Right Content */}
             <div className="space-y-8">
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <h1 
                   id="hero-title"
-                  className="text-5xl lg:text-7xl font-bold text-[#333333] leading-tight hero-title-animation"
+                  className="text-4xl lg:text-6xl font-bold text-[#333333] leading-tight hero-title-animation"
                 >
-                  O Futuro te Espera! Concorra a uma Moto Elétrica 0KM com a Loteria Encruzilhada.
+                  O que você faria se acordasse milionário em 2026?
                 </h1>
                 <p 
                   id="hero-subtitle"
                   className="text-xl lg:text-2xl text-[#333333] font-medium hero-subtitle-animation"
                 >
-                  Acelere sua vida com zero emissão! É simples, é rápido: cadastre-se agora e receba na hora o seu Número da Sorte para o grande sorteio.
+                  A Mega da Virada vem aí e sua chance está na Loteria Encruzilhada!
                 </p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">🎯</span>
+                    <span className="text-xl font-semibold text-[#333333]">Prêmio de R$ 850 milhões</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">🏍️</span>
+                    <span className="text-xl font-semibold text-[#333333]">+ Moto elétrica (sorteada entre quem comprar bolão)</span>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg p-6 shadow-lg">
+                  <p className="text-lg font-semibold text-[#333333] mb-4">
+                    Enquanto a hora não chega, comece a ganhar agora com nosso momento da sorte:
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-500">✅</span>
+                      <span className="text-[#333333]">Airfryer</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-500">✅</span>
+                      <span className="text-[#333333]">Sanduicheira</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-500">✅</span>
+                      <span className="text-[#333333]">Liquidificador</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-500">✅</span>
+                      <span className="text-[#333333]">3 Bolões da Mega</span>
+                    </div>
+                  </div>
+                  <p className="text-lg font-semibold text-[#333333] mt-4">
+                    É só preencher o formulário abaixo.
+                  </p>
+                  <p className="text-sm text-[#666666] mt-2">
+                    Sem pegadinha, sem custo, sem compromisso.
+                  </p>
+                </div>
               </div>
               
 
@@ -143,17 +197,14 @@ const Index = () => {
       <section
         ref={infoRef}
         className={cn(
-          'py-16 md:py-24 bg-[#f5db17] transition-opacity duration-500',
+          'py-16 md:py-24 bg-[#0065b6] transition-opacity duration-500',
           isInfoVisible ? 'animate-fade-in-up' : 'opacity-0',
         )}
       >
         <div className="container mx-auto px-4 text-center max-w-6xl">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#0065b6] mb-8">
-            Sua Chance de Mudar de Vida Chegou!
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
+            Participe do momento da sorte sem custo nenhum
           </h2>
-          <p className="text-xl text-[#333333] leading-relaxed mb-8">
-            Imagine-se pilotando uma moto elétrica de última geração, economizando combustível e contribuindo para um planeta mais verde. A Loteria Encruzilhada torna esse sonho realidade!
-          </p>
           
           <div className="bg-white rounded-2xl p-8 shadow-lg">
             <h3 className="text-3xl font-bold text-[#0065b6] mb-6">
@@ -234,6 +285,28 @@ const Index = () => {
           </p>
         </div>
       </footer>
+
+      {/* Parceria Mega Elétron */}
+      <section className="bg-[#f5db17] py-6">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8">
+            <div className="text-center md:text-left">
+              <h4 className="text-xl font-bold text-[#333333] mb-2">Parceria:</h4>
+            </div>
+            <div className="flex items-center space-x-4">
+              <img 
+                src="/megaletron_recife.png" 
+                alt="Mega Elétron" 
+                className="h-12 w-auto"
+              />
+              <div className="text-[#333333]">
+                <p className="font-semibold">Mega Elétron</p>
+                <p className="text-sm">Contato: +55 81 99106-8929</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   )
 }
