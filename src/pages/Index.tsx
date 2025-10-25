@@ -36,14 +36,33 @@ const Index = () => {
             {/* Left Content - Man Illustration */}
             <div className="relative animate-fade-in-up">
               <div className="relative w-full h-96 lg:h-[500px]">
-                {/* Blue Circle with Man */}
-                <div className="absolute inset-0 bg-[#0065b6] rounded-full flex items-center justify-center transform -rotate-12 shadow-2xl">
-                  <div className="text-center space-y-4 text-white">
-                    <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mx-auto">
-                      <i className="fas fa-user text-[#0065b6] text-6xl"></i>
-                    </div>
-                    <h3 className="text-2xl font-bold">Homem Animado</h3>
-                    <p className="text-sm">Pronto para ganhar!</p>
+                {/* Composição com 3 camadas animadas */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  {/* Camada 1: icons_premios2.png - Fundo com explosão de prêmios */}
+                  <div className="absolute inset-0 animate-pulse">
+                    <img 
+                      src="/icons_premios2.png" 
+                      alt="Explosão de prêmios" 
+                      className="w-full h-full object-contain animate-spin-slow"
+                    />
+                  </div>
+                  
+                  {/* Camada 2: cindy-photo.png - Personagem principal */}
+                  <div className="relative z-10 animate-bounce-gentle">
+                    <img 
+                      src="/cindy-photo.png" 
+                      alt="Personagem animado" 
+                      className="w-80 h-80 object-contain"
+                    />
+                  </div>
+                  
+                  {/* Camada 3: icons-premios.png - Prêmios flutuantes */}
+                  <div className="absolute inset-0 animate-float">
+                    <img 
+                      src="/icons-premios.png" 
+                      alt="Prêmios" 
+                      className="w-full h-full object-contain opacity-80"
+                    />
                   </div>
                 </div>
                 

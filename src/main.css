@@ -235,4 +235,50 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* Animações para composição de 3 camadas */
+  .animate-spin-slow {
+    animation: spinSlow 8s linear infinite;
+  }
+
+  @keyframes spinSlow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s ease-in-out infinite;
+  }
+
+  @keyframes bounceGentle {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-5px) rotate(1deg);
+    }
+    50% {
+      transform: translateY(-10px) rotate(0deg);
+    }
+    75% {
+      transform: translateY(-5px) rotate(-1deg);
+    }
+  }
 }
