@@ -34,7 +34,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center">
             <img 
-              src="/logo-loteria-encruzilhada.png" 
+              src="https://sorteio.loteriaencruzilhada.com.br/logo-loteria-encruzilhada.png" 
               alt="Loteria Encruzilhada" 
               className="h-16 w-auto"
             />
