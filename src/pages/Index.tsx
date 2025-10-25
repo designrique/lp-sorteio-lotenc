@@ -30,7 +30,7 @@ const Index = () => {
   return (
     <>
       {/* Barra azul superior com logo */}
-      <section className="bg-[#0065b6] py-4">
+      <section className="bg-[#001ea7] py-4">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center">
             <img 
@@ -43,7 +43,7 @@ const Index = () => {
       </section>
 
       {/* Hero Section - Split Layout */}
-      <section className="relative min-h-screen flex items-center bg-[#f5db17] overflow-hidden">
+      <section className="relative min-h-screen flex items-center bg-[#ebce10] overflow-hidden">
         <div className="container mx-auto px-4 py-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content - Man Illustration */}
@@ -80,8 +80,8 @@ const Index = () => {
                 </div>
                 
                 {/* Floating Dollar Coin */}
-                <div className="absolute -top-8 -right-8 w-20 h-20 bg-[#f5db17] rounded-full animate-bounce flex items-center justify-center shadow-lg">
-                  <i className="fas fa-usd text-[#0065b6] text-3xl"></i>
+                <div className="absolute -top-8 -right-8 w-20 h-20 bg-[#ebce10] rounded-full animate-bounce flex items-center justify-center shadow-lg">
+                  <i className="fas fa-usd text-[#001ea7] text-3xl"></i>
                 </div>
               </div>
             </div>
@@ -148,7 +148,7 @@ const Index = () => {
               <div className="flex items-center space-x-4">
                 <Button
                   onClick={handleScrollToForm}
-                  className="bg-[#0065b6] hover:bg-[#0065b6]/90 text-white rounded-lg px-8 py-6 text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg"
+                  className="bg-[#001ea7] hover:bg-[#001ea7]/90 text-white rounded-lg px-8 py-6 text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg"
                 >
                   QUERO MEU NÚMERO DA SORTE AGORA!
                   <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
@@ -158,20 +158,20 @@ const Index = () => {
               {/* Features */}
               <div className="grid grid-cols-1 gap-4 pt-8">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-[#f5db17] rounded-full flex items-center justify-center">
-                    <i className="fas fa-leaf text-[#0065b6] text-lg"></i>
+                  <div className="w-10 h-10 bg-[#ebce10] rounded-full flex items-center justify-center">
+                    <i className="fas fa-leaf text-[#001ea7] text-lg"></i>
                   </div>
                   <span className="text-[#333333] font-medium">Zero Poluição: Contribua para um futuro sustentável</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-[#f5db17] rounded-full flex items-center justify-center">
-                    <i className="fas fa-gas-pump text-[#0065b6] text-lg"></i>
+                  <div className="w-10 h-10 bg-[#ebce10] rounded-full flex items-center justify-center">
+                    <i className="fas fa-gas-pump text-[#001ea7] text-lg"></i>
                   </div>
                   <span className="text-[#333333] font-medium">Zero Combustível: Diga adeus aos postos de gasolina</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-[#f5db17] rounded-full flex items-center justify-center">
-                    <i className="fas fa-file-alt text-[#0065b6] text-lg"></i>
+                  <div className="w-10 h-10 bg-[#ebce10] rounded-full flex items-center justify-center">
+                    <i className="fas fa-file-alt text-[#001ea7] text-lg"></i>
                   </div>
                   <span className="text-[#333333] font-medium">Zero Burocracia: Seu Número da Sorte é gerado automaticamente</span>
                 </div>
@@ -197,7 +197,7 @@ const Index = () => {
       <section
         ref={infoRef}
         className={cn(
-          'py-16 md:py-24 bg-[#0065b6] transition-opacity duration-500',
+          'py-16 md:py-24 bg-[#001ea7] transition-opacity duration-500',
           isInfoVisible ? 'animate-fade-in-up' : 'opacity-0',
         )}
       >
@@ -207,14 +207,14 @@ const Index = () => {
           </h2>
           
           <div className="bg-white rounded-2xl p-8 shadow-lg">
-            <h3 className="text-3xl font-bold text-[#0065b6] mb-6">
+            <h3 className="text-3xl font-bold text-[#001ea7] mb-6">
               Como Participar e Garantir Seu Número da Sorte
             </h3>
             
             <div className="grid md:grid-cols-3 gap-8 text-left">
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-[#0065b6] text-white rounded-full flex items-center justify-center font-bold">1</div>
+                  <div className="w-8 h-8 bg-[#001ea7] text-white rounded-full flex items-center justify-center font-bold">1</div>
                   <h4 className="text-xl font-semibold text-[#333333]">Cadastro Rápido</h4>
                 </div>
                 <p className="text-[#333333]">
@@ -224,7 +224,7 @@ const Index = () => {
               
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-[#0065b6] text-white rounded-full flex items-center justify-center font-bold">2</div>
+                  <div className="w-8 h-8 bg-[#001ea7] text-white rounded-full flex items-center justify-center font-bold">2</div>
                   <h4 className="text-xl font-semibold text-[#333333]">Número da Sorte Gerado</h4>
                 </div>
                 <p className="text-[#333333]">
@@ -234,7 +234,7 @@ const Index = () => {
               
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-[#0065b6] text-white rounded-full flex items-center justify-center font-bold">3</div>
+                  <div className="w-8 h-8 bg-[#001ea7] text-white rounded-full flex items-center justify-center font-bold">3</div>
                   <h4 className="text-xl font-semibold text-[#333333]">É Só Torcer</h4>
                 </div>
                 <p className="text-[#333333]">
@@ -264,10 +264,10 @@ const Index = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-[#0065b6] text-white py-8">
+      <footer className="bg-[#001ea7] text-white py-8">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <i className="fas fa-star text-[#f5db17] text-2xl"></i>
+            <i className="fas fa-star text-[#ebce10] text-2xl"></i>
             <h3 className="text-2xl font-bold">Loteria Encruzilhada</h3>
           </div>
           <p className="text-lg mb-4">
@@ -275,7 +275,7 @@ const Index = () => {
           </p>
           <p className="text-sm">
             Consulte o regulamento completo{' '}
-            <a href="#" className="text-[#f5db17] underline hover:text-white transition-colors">
+            <a href="#" className="text-[#ebce10] underline hover:text-white transition-colors">
               [LINK PARA REGULAMENTO]
             </a>
           </p>
@@ -287,7 +287,7 @@ const Index = () => {
       </footer>
 
       {/* Parceria Mega Elétron */}
-      <section className="bg-[#f5db17] py-6">
+      <section className="bg-[#ebce10] py-6">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8">
             <div className="text-center md:text-left">
