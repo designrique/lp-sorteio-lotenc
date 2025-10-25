@@ -266,9 +266,12 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-[#001ea7] text-white py-8">
         <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <i className="fas fa-star text-[#ebce10] text-2xl"></i>
-            <h3 className="text-2xl font-bold">Loteria Encruzilhada</h3>
+          <div className="flex items-center justify-center mb-4">
+            <img 
+              src="/logo.png" 
+              alt="Loteria Encruzilhada" 
+              className="h-12 w-auto"
+            />
           </div>
           <p className="text-lg mb-4">
             A sua chance de ganhar prêmios incríveis com total transparência e credibilidade.
