@@ -180,17 +180,6 @@ const Index = () => {
           </div>
         </div>
 
-        {/* WhatsApp Button */}
-        <div className="fixed bottom-6 right-6 z-50">
-          <a 
-            href="https://wa.me/5511999999999" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="w-16 h-16 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300"
-          >
-            <i className="fab fa-whatsapp text-white text-2xl"></i>
-          </a>
-        </div>
       </section>
 
       {/* Info Section */}
