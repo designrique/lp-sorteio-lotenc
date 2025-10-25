@@ -292,7 +292,7 @@ const Index = () => {
             </div>
             <div className="flex items-center space-x-4">
               <img 
-                src="/mega_logo.png" 
+                src="/mega.png" 
                 alt="Mega Elétron" 
                 className="h-12 w-auto"
               />
