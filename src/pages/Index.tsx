@@ -33,9 +33,11 @@ const Index = () => {
       <section className="bg-[#0065b6] py-4">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center">
-            <div className="text-white text-2xl font-bold">
-              LOTERIA ENCRUZILHADA
-            </div>
+            <img 
+              src="/logo-loteria-encruzilhada.png" 
+              alt="Loteria Encruzilhada" 
+              className="h-16 w-auto"
+            />
           </div>
         </div>
       </section>
