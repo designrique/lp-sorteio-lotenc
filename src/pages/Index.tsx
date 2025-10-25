@@ -276,12 +276,6 @@ const Index = () => {
           <p className="text-lg mb-4">
             A sua chance de ganhar prêmios incríveis com total transparência e credibilidade.
           </p>
-          <p className="text-sm">
-            Consulte o regulamento completo{' '}
-            <a href="#" className="text-[#ebce10] underline hover:text-white transition-colors">
-              [LINK PARA REGULAMENTO]
-            </a>
-          </p>
           <p className="text-sm mt-4">
             <i className="fas fa-shield-alt mr-2"></i>
             Seu cadastro é seguro e seu Número da Sorte é único.
@@ -298,7 +292,7 @@ const Index = () => {
             </div>
             <div className="flex items-center space-x-4">
               <img 
-                src="/megaletron_recife.png" 
+                src="/mega_logo.png" 
                 alt="Mega Elétron" 
                 className="h-12 w-auto"
               />
