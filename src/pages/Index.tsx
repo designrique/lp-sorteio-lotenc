@@ -52,7 +52,7 @@ const Index = () => {
                     <img 
                       src="/cindy-photo.png" 
                       alt="Personagem animado" 
-                      className="w-80 h-80 object-contain"
+                      className="w-96 h-96 object-contain"
                     />
                   </div>
                   
