@@ -295,6 +295,15 @@ const Index = () => {
                 src="/mega.png" 
                 alt="Mega Elétron" 
                 className="h-12 w-auto"
+                onError={(e) => {
+                  console.error('Erro ao carregar logo Mega Elétron:', e);
+                  e.currentTarget.style.display = 'none';
+                  // Mostrar fallback de texto
+                  const fallback = document.createElement('div');
+                  fallback.className = 'text-[#333333] font-bold text-lg';
+                  fallback.textContent = 'MEGA ELÉTRON';
+                  e.currentTarget.parentNode?.appendChild(fallback);
+                }}
               />
               <div className="text-[#333333]">
                 <p className="font-semibold">Mega Elétron</p>
