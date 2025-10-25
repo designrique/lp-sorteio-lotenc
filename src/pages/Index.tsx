@@ -45,7 +45,7 @@ const Index = () => {
       {/* Hero Section - Split Layout */}
       <section className="relative min-h-screen flex items-center bg-[#ebce10] overflow-hidden">
         <div className="container mx-auto px-4 py-16">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Left Content - Man Illustration */}
             <div className="relative animate-fade-in-up">
               <div className="relative w-full h-96 lg:h-[500px]">
