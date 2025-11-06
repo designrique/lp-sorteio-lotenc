@@ -40,7 +40,7 @@ Configure as seguintes variáveis no painel do Netlify (Site settings > Environm
 - Configure o webhook para receber requisições POST
 - Copie a URL completa do webhook (ex: `https://seu-n8n.com/webhook/abc123xyz`)
 - Configure a variável `N8N_WEBHOOK_URL` no Netlify com essa URL
-- O webhook receberá um payload JSON com `nome` e `numero_sorte`
+- O webhook receberá um payload JSON com `nome`, `whatsapp`, `email` e `numero_sorte`
 
 ## Integração com N8N
 
@@ -51,6 +51,8 @@ Quando um cadastro é realizado com sucesso, o sistema envia automaticamente os 
 ```json
 {
   "nome": "Nome Completo do Cliente",
+  "whatsapp": "81995076463",
+  "email": "cliente@exemplo.com",
   "numero_sorte": "1234"
 }
 ```
@@ -69,7 +71,7 @@ Quando um cadastro é realizado com sucesso, o sistema envia automaticamente os 
 3. Configure para receber requisições **POST**
 4. Copie a URL do webhook gerada
 5. Configure a variável `N8N_WEBHOOK_URL` no Netlify com essa URL
-6. No workflow do N8N, use os campos `nome` e `numero_sorte` do payload recebido
+6. No workflow do N8N, use os campos `nome`, `whatsapp`, `email` e `numero_sorte` do payload recebido
 
 ## Estrutura da Tabela
 

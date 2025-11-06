@@ -102,6 +102,8 @@ exports.handler = async (event, context) => {
             try {
               const n8nPayload = {
                 nome: name,
+                whatsapp: whatsapp,
+                email: email,
                 numero_sorte: luckyNumber.toString().padStart(4, '0'),
               }
 
