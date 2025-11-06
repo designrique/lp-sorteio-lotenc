@@ -63,18 +63,25 @@ exports.handler = async (event, context) => {
     // Tentar salvar no NocoDB se configurado
     if (nocodbBaseUrl && nocodbToken) {
       try {
+        // Remover máscara do CPF (deixar apenas números) para salvar no NocoDB
+        const cpfSemMascara = cpf.replace(/\D/g, '')
+        
         const dataToSave = {
           "usuario": name,
           "whatsapp": whatsapp,
           "email": email,
-          "cpf": cpf,
+          "cpf": cpfSemMascara,
           "numero_sorte": luckyNumber,
           "criado_em": new Date().toISOString(),
         }
         
         console.log('Tentando salvar no NocoDB:', dataToSave)
         
-        const nocodbResponse = await fetch(`${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`, {
+        // Construir URL da API do NocoDB
+        const nocodbApiUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`
+        console.log('URL da API NocoDB:', nocodbApiUrl)
+        
+        const nocodbResponse = await fetch(nocodbApiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -134,7 +141,23 @@ exports.handler = async (event, context) => {
           }
         } else {
           const errorText = await nocodbResponse.text()
-          console.error('Erro ao salvar no NocoDB:', errorText)
+          console.error('Erro ao salvar no NocoDB - Status:', nocodbResponse.status)
+          console.error('Erro ao salvar no NocoDB - Resposta:', errorText)
+          console.error('URL utilizada:', `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`)
+          console.error('Payload enviado:', JSON.stringify(dataToSave))
+          
+          // Retornar erro se NocoDB falhar
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({
+              error: 'Erro ao salvar no banco de dados',
+              message: 'Não foi possível salvar seus dados. Por favor, tente novamente.',
+              details: nocodbResponse.status === 401 ? 'Token inválido ou sem permissão' : 
+                       nocodbResponse.status === 404 ? 'Projeto ou tabela não encontrado' :
+                       'Erro desconhecido'
+            }),
+          }
         }
       } catch (nocodbError) {
         console.error('Erro na integração com NocoDB:', nocodbError)
