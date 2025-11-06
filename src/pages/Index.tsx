@@ -200,7 +200,7 @@ const Index = () => {
               Como Participar e Garantir Seu Número da Sorte
             </h3>
             
-            <div className="grid md:grid-cols-3 gap-8 text-left">
+            <div className="grid md:grid-cols-4 gap-8 text-left">
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-[#001ea7] text-white rounded-full flex items-center justify-center font-bold">1</div>
@@ -217,17 +217,27 @@ const Index = () => {
                   <h4 className="text-xl font-semibold text-[#333333]">Número da Sorte Gerado</h4>
                 </div>
                 <p className="text-[#333333]">
-                  Imediatamente após o cadastro, seu Número da Sorte exclusivo será gerado e enviado para o seu e-mail.
+                  Imediatamente após o cadastro, seu Número da Sorte exclusivo será gerado e enviado para o seu whatsapp.
                 </p>
               </div>
               
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-[#001ea7] text-white rounded-full flex items-center justify-center font-bold">3</div>
+                  <h4 className="text-xl font-semibold text-[#333333]">Compre um Bolão</h4>
+                </div>
+                <p className="text-[#333333]">
+                  Na mensagem recebida em seu whatsapp, chegará um link direto para o nosso setor de vendas. Compre um bolão da Mega da Virada disponível. Isso garante sua participação nos sorteios.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-[#001ea7] text-white rounded-full flex items-center justify-center font-bold">4</div>
                   <h4 className="text-xl font-semibold text-[#333333]">É Só Torcer</h4>
                 </div>
                 <p className="text-[#333333]">
-                  Pronto! Você já está concorrendo à Moto Elétrica 0KM no próximo sorteio da Loteria Encruzilhada.
+                  Pronto! Você já está concorrendo à Moto Elétrica 0KM no próximo sorteio da Loteria Encruzilhada. Guarde o comprovante da compra do bolão com o seu nome e CPF e também o seu número da sorte (também enviado no whatsapp).
                 </p>
               </div>
             </div>
