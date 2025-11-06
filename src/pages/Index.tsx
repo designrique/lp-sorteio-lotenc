@@ -130,10 +130,6 @@ const Index = () => {
                       <span className="text-green-500">✅</span>
                       <span className="text-[#333333]">Liquidificador</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-green-500">✅</span>
-                      <span className="text-[#333333]">7 Bolões da Mega</span>
-                    </div>
                   </div>
                   <p className="text-lg font-semibold text-[#333333] mt-4">
                     É só preencher o formulário abaixo.
