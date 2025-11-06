@@ -52,11 +52,11 @@ const Index = () => {
                 {/* Composição com 3 camadas animadas */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   {/* Camada 1: icons_premios2.png - Fundo com explosão de prêmios */}
-                  <div className="absolute inset-0 animate-pulse">
+                  <div className="absolute inset-0">
                     <img 
                       src="/icons_premios2.png" 
                       alt="Explosão de prêmios" 
-                      className="w-full h-full object-contain animate-spin-slow"
+                      className="w-full h-full object-contain animate-pulse"
                     />
                   </div>
                   
