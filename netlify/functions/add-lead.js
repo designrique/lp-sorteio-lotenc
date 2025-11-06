@@ -87,12 +87,13 @@ exports.handler = async (event, context) => {
           // Se encontrar registros com o mesmo CPF, retornar erro
           if (existingData.list && existingData.list.length > 0) {
             console.log('CPF já cadastrado:', cpfSemMascara)
+            console.log('Registros encontrados:', existingData.list.length)
             return {
               statusCode: 409,
               headers,
               body: JSON.stringify({
                 error: 'CPF já cadastrado',
-                message: 'Este CPF já está cadastrado em nosso sistema. Não é possível realizar mais de um cadastro com o mesmo CPF.',
+                message: 'Este CPF já está cadastrado em nosso sistema. Não é possível realizar mais de um cadastro com o mesmo CPF. Se você já se cadastrou anteriormente, utilize o mesmo CPF para verificar seu número da sorte.',
               }),
             }
           }
