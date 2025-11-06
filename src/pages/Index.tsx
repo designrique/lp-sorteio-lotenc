@@ -56,7 +56,7 @@ const Index = () => {
                     <img 
                       src="/icons_premios2.png" 
                       alt="Explosão de prêmios" 
-                      className="w-full h-full object-contain animate-pulse"
+                      className="w-full h-full object-contain animate-pulse-scale"
                     />
                   </div>
                   
