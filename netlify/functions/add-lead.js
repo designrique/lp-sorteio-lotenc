@@ -88,6 +88,50 @@ exports.handler = async (event, context) => {
         if (nocodbResponse.ok) {
           const savedData = await nocodbResponse.json()
           console.log('Dados salvos no NocoDB:', savedData)
+
+          // Enviar dados para N8N via webhook
+          const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL
+          if (n8nWebhookUrl) {
+            try {
+              const n8nPayload = {
+                nome: name,
+                numero_sorte: luckyNumber.toString().padStart(4, '0'),
+              }
+
+              console.log('Enviando dados para N8N:', n8nPayload)
+
+              // Criar AbortController para timeout de 10 segundos
+              const controller = new AbortController()
+              const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+              const n8nResponse = await fetch(n8nWebhookUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(n8nPayload),
+                signal: controller.signal,
+              })
+
+              clearTimeout(timeoutId)
+
+              if (n8nResponse.ok) {
+                console.log('Mensagem enviada para N8N com sucesso')
+              } else {
+                const n8nErrorText = await n8nResponse.text()
+                console.error('Erro ao enviar para N8N - Status:', n8nResponse.status, 'Resposta:', n8nErrorText)
+              }
+            } catch (n8nError) {
+              if (n8nError.name === 'AbortError') {
+                console.error('Timeout ao enviar para N8N (10 segundos)')
+              } else {
+                console.error('Erro ao enviar para N8N:', n8nError.message)
+              }
+              // Não bloqueia o cadastro se N8N falhar
+            }
+          } else {
+            console.log('N8N_WEBHOOK_URL não configurado - pulando envio para N8N')
+          }
         } else {
           const errorText = await nocodbResponse.text()
           console.error('Erro ao salvar no NocoDB:', errorText)
