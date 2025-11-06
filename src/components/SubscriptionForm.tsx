@@ -56,6 +56,7 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
   const [isLoading, setIsLoading] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
   const [luckyNumberFound, setLuckyNumberFound] = useState<string | null>(null)
+  const [showCheckForm, setShowCheckForm] = useState(true)
   const { toast } = useToast()
   const { ref, isVisible } = useScrollObserver({ threshold: 0.2 })
 
@@ -106,6 +107,14 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
       })
       onSuccess(result.NumeroDaSorte)
       form.reset()
+      
+      // Ocultar formulário de consulta temporariamente
+      setShowCheckForm(false)
+      
+      // Mostrar novamente após 30 segundos
+      setTimeout(() => {
+        setShowCheckForm(true)
+      }, 30000)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro ao tentar cadastrar. Por favor, tente novamente mais tarde.'
       
@@ -300,13 +309,14 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
         </Card>
 
         {/* Formulário de Consulta */}
-        <Card className="bg-white shadow-soft">
-          <CardHeader>
-            <CardTitle className="text-xl md:text-2xl text-center font-bold">
-              CONSULTAR MEU NÚMERO DA SORTE
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        {showCheckForm && (
+          <Card className="bg-white shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-xl md:text-2xl text-center font-bold">
+                CONSULTAR MEU NÚMERO DA SORTE
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
             <Form {...checkForm}>
               <form onSubmit={checkForm.handleSubmit(onCheckSubmit)} className="space-y-6">
                 <FormField
@@ -380,6 +390,7 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
             </Form>
           </CardContent>
         </Card>
+        )}
       </div>
     </section>
   )
