@@ -1,9 +1,10 @@
 {
   "name": "netlify-functions",
   "version": "1.0.0",
-  "description": "Netlify Functions for the project",
-  "main": "index.js",
+  "description": "Netlify Functions for OG Image generation",
   "dependencies": {
-    "@netlify/functions": "^2.0.0"
+    "satori": "^0.15.0",
+    "sharp": "^0.33.0"
   }
 }
+

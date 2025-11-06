@@ -11,6 +11,11 @@
   package = "@netlify/plugin-functions-install-core"
 
 [[redirects]]
+  from = "/api/og-image"
+  to = "/.netlify/functions/og-image"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
