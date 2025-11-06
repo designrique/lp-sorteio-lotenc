@@ -57,13 +57,18 @@ exports.handler = async (event, context) => {
     }
 
     // Remover máscara do CPF (deixar apenas números)
-    const cpfSemMascara = cpf.replace(/\D/g, '')
+    const cpfSemMascara = String(cpf.replace(/\D/g, ''))
+    
+    // Garantir que o CPF tenha 11 dígitos (adicionar zero à esquerda se necessário)
+    // Isso preserva zeros à esquerda que podem ser perdidos
+    const cpfFormatado = cpfSemMascara.padStart(11, '0')
 
     // Consultar CPF no NocoDB
     const nocodbApiUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`
-    const checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,${cpfSemMascara})`
+    // Usar aspas na query para garantir que seja tratado como string pelo NocoDB
+    const checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfFormatado}")`
 
-    console.log('Consultando CPF no NocoDB:', cpfSemMascara)
+    console.log('Consultando CPF no NocoDB:', cpfFormatado)
 
     const checkCpfResponse = await fetch(checkCpfUrl, {
       method: 'GET',

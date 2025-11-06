@@ -64,13 +64,18 @@ exports.handler = async (event, context) => {
     if (nocodbBaseUrl && nocodbToken) {
       try {
         // Remover máscara do CPF (deixar apenas números) para salvar no NocoDB
-        const cpfSemMascara = cpf.replace(/\D/g, '')
+        const cpfSemMascara = String(cpf.replace(/\D/g, ''))
+        
+        // Garantir que o CPF tenha 11 dígitos (adicionar zero à esquerda se necessário)
+        // Isso preserva zeros à esquerda que podem ser perdidos
+        const cpfFormatado = cpfSemMascara.padStart(11, '0')
         
         // Verificar se CPF já existe no banco de dados
         const nocodbApiUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`
-        const checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,${cpfSemMascara})`
+        // Usar aspas na query para garantir que seja tratado como string pelo NocoDB
+        const checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfFormatado}")`
         
-        console.log('Verificando se CPF já existe:', cpfSemMascara)
+        console.log('Verificando se CPF já existe:', cpfFormatado)
         console.log('URL de verificação:', checkCpfUrl)
         
         const checkCpfResponse = await fetch(checkCpfUrl, {
@@ -86,7 +91,7 @@ exports.handler = async (event, context) => {
           
           // Se encontrar registros com o mesmo CPF, retornar erro
           if (existingData.list && existingData.list.length > 0) {
-            console.log('CPF já cadastrado:', cpfSemMascara)
+            console.log('CPF já cadastrado:', cpfFormatado)
             console.log('Registros encontrados:', existingData.list.length)
             return {
               statusCode: 409,
@@ -105,7 +110,7 @@ exports.handler = async (event, context) => {
           "usuario": name,
           "whatsapp": whatsapp,
           "email": email,
-          "cpf": cpfSemMascara,
+          "cpf": cpfFormatado, // Garantir que seja string com zeros à esquerda preservados
           "numero_sorte": luckyNumber,
           "criado_em": new Date().toISOString(),
         }
