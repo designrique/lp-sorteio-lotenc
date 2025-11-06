@@ -23,6 +23,8 @@ const phoneRegex = new RegExp(
   /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/,
 )
 
+const cpfRegex = /^[\d]{3}\.?[\d]{3}\.?[\d]{3}-?[\d]{2}$/
+
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Nome é obrigatório.' }),
   whatsapp: z
@@ -30,6 +32,10 @@ const formSchema = z.object({
     .regex(phoneRegex, 'Formato de WhatsApp inválido.')
     .min(10, { message: 'WhatsApp deve ter no mínimo 10 dígitos.' }),
   email: z.string().email({ message: 'Formato de e-mail inválido.' }),
+  cpf: z
+    .string()
+    .min(1, { message: 'CPF é obrigatório.' })
+    .regex(cpfRegex, 'Formato de CPF inválido. Use o formato XXX.XXX.XXX-XX'),
 })
 
 type SubscriptionFormValues = z.infer<typeof formSchema>
@@ -49,6 +55,7 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
       name: '',
       whatsapp: '',
       email: '',
+      cpf: '',
     },
   })
 
@@ -151,6 +158,53 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
                         placeholder="seu.email@exemplo.com"
                         {...field}
                         className="h-12"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="cpf"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">CPF</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="XXX.XXX.XXX-XX"
+                        {...field}
+                        className="h-12"
+                        maxLength={14}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          // Remove tudo que não é número
+                          const numbers = value.replace(/\D/g, '')
+                          // Aplica a máscara XXX.XXX.XXX-XX
+                          let masked = numbers
+                          if (numbers.length > 3) {
+                            masked = numbers.slice(0, 3) + '.' + numbers.slice(3)
+                          }
+                          if (numbers.length > 6) {
+                            masked =
+                              numbers.slice(0, 3) +
+                              '.' +
+                              numbers.slice(3, 6) +
+                              '.' +
+                              numbers.slice(6)
+                          }
+                          if (numbers.length > 9) {
+                            masked =
+                              numbers.slice(0, 3) +
+                              '.' +
+                              numbers.slice(3, 6) +
+                              '.' +
+                              numbers.slice(6, 9) +
+                              '-' +
+                              numbers.slice(9, 11)
+                          }
+                          field.onChange(masked)
+                        }}
                       />
                     </FormControl>
                     <FormMessage />

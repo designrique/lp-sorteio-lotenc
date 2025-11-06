@@ -29,12 +29,12 @@ exports.handler = async (event, context) => {
     
     // Parse do body
     const data = JSON.parse(event.body)
-    const { name, whatsapp, email } = data
+    const { name, whatsapp, email, cpf } = data
 
-    console.log('Dados recebidos:', { name, whatsapp, email })
+    console.log('Dados recebidos:', { name, whatsapp, email, cpf })
 
     // Validar dados obrigatórios
-    if (!name || !whatsapp || !email) {
+    if (!name || !whatsapp || !email || !cpf) {
       return {
         statusCode: 400,
         headers,
@@ -67,6 +67,7 @@ exports.handler = async (event, context) => {
           "usuario": name,
           "whatsapp": whatsapp,
           "email": email,
+          "cpf": cpf,
           "numero_sorte": luckyNumber,
           "criado_em": new Date().toISOString(),
         }
