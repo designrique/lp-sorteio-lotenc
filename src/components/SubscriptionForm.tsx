@@ -90,11 +90,12 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
       onSuccess(result.NumeroDaSorte)
       form.reset()
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro ao tentar cadastrar. Por favor, tente novamente mais tarde.'
+      
       toast({
         variant: 'destructive',
         title: 'Erro!',
-        description:
-          'Ocorreu um erro ao tentar cadastrar. Por favor, tente novamente mais tarde.',
+        description: errorMessage,
       })
     } finally {
       setIsLoading(false)
