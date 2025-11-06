@@ -141,6 +141,7 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
       if (result.success && result.numero_sorte) {
         setLuckyNumberFound(result.numero_sorte)
         toast({
+          variant: 'success',
           title: 'Número encontrado!',
           description: `Seu número da sorte é: ${result.numero_sorte}`,
         })
