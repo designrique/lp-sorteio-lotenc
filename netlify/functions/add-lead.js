@@ -66,6 +66,40 @@ exports.handler = async (event, context) => {
         // Remover máscara do CPF (deixar apenas números) para salvar no NocoDB
         const cpfSemMascara = cpf.replace(/\D/g, '')
         
+        // Verificar se CPF já existe no banco de dados
+        const nocodbApiUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`
+        const checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,${cpfSemMascara})`
+        
+        console.log('Verificando se CPF já existe:', cpfSemMascara)
+        console.log('URL de verificação:', checkCpfUrl)
+        
+        const checkCpfResponse = await fetch(checkCpfUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'xc-token': nocodbToken,
+          },
+        })
+        
+        if (checkCpfResponse.ok) {
+          const existingData = await checkCpfResponse.json()
+          
+          // Se encontrar registros com o mesmo CPF, retornar erro
+          if (existingData.list && existingData.list.length > 0) {
+            console.log('CPF já cadastrado:', cpfSemMascara)
+            return {
+              statusCode: 409,
+              headers,
+              body: JSON.stringify({
+                error: 'CPF já cadastrado',
+                message: 'Este CPF já está cadastrado em nosso sistema. Não é possível realizar mais de um cadastro com o mesmo CPF.',
+              }),
+            }
+          }
+        } else {
+          console.warn('Erro ao verificar CPF existente, continuando com cadastro')
+        }
+        
         const dataToSave = {
           "usuario": name,
           "whatsapp": whatsapp,
@@ -77,8 +111,6 @@ exports.handler = async (event, context) => {
         
         console.log('Tentando salvar no NocoDB:', dataToSave)
         
-        // Construir URL da API do NocoDB
-        const nocodbApiUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`
         console.log('URL da API NocoDB:', nocodbApiUrl)
         
         const nocodbResponse = await fetch(nocodbApiUrl, {

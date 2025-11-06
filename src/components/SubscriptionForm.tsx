@@ -71,7 +71,14 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
       })
 
       if (!response.ok) {
-        throw new Error('Falha ao registrar. Tente novamente.')
+        const errorData = await response.json().catch(() => ({}))
+        
+        // Tratar erro de CPF duplicado
+        if (response.status === 409) {
+          throw new Error(errorData.message || 'Este CPF já está cadastrado em nosso sistema.')
+        }
+        
+        throw new Error(errorData.message || 'Falha ao registrar. Tente novamente.')
       }
 
       const result = await response.json()
