@@ -16,6 +16,24 @@
   status = 200
 
 [[redirects]]
+  from = "/api/add-lead"
+  to = "/.netlify/functions/add-lead"
+  status = 200
+
+[[redirects]]
+  from = "/api/check-lucky-number"
+  to = "/.netlify/functions/check-lucky-number"
+  status = 200
+
+# Exceção para funções Netlify - não redirecionar
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+
+# Redirect catch-all para SPA - deve ser o último
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

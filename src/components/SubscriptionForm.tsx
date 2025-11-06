@@ -80,7 +80,7 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
   const onSubmit = async (data: SubscriptionFormValues) => {
     setIsLoading(true)
     try {
-      const response = await fetch('/.netlify/functions/add-lead', {
+      const response = await fetch('/api/add-lead', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
     setIsChecking(true)
     setLuckyNumberFound(null)
     try {
-      const response = await fetch('/.netlify/functions/check-lucky-number', {
+      const response = await fetch('/api/check-lucky-number', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
