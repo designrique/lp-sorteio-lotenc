@@ -62,15 +62,20 @@ exports.handler = async (event, context) => {
     // Garantir que o CPF tenha 11 dígitos (adicionar zero à esquerda se necessário)
     // Isso preserva zeros à esquerda que podem ser perdidos
     const cpfFormatado = cpfSemMascara.padStart(11, '0')
+    
+    // CPF sem zeros à esquerda (para compatibilidade com dados antigos salvos como número)
+    const cpfSemZeros = cpfSemMascara
 
     // Consultar CPF no NocoDB
     const nocodbApiUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`
-    // Usar aspas na query para garantir que seja tratado como string pelo NocoDB
-    const checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfFormatado}")`
+    
+    // Tentar buscar primeiro com CPF formatado (com zeros) - para dados novos salvos como texto
+    let checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfFormatado}")`
+    
+    console.log('Consultando CPF no NocoDB (formato com zeros):', cpfFormatado)
+    console.log('URL de consulta:', checkCpfUrl)
 
-    console.log('Consultando CPF no NocoDB:', cpfFormatado)
-
-    const checkCpfResponse = await fetch(checkCpfUrl, {
+    let checkCpfResponse = await fetch(checkCpfUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -87,7 +92,32 @@ exports.handler = async (event, context) => {
       }
     }
 
-    const existingData = await checkCpfResponse.json()
+    let existingData = await checkCpfResponse.json()
+
+    // Se não encontrou com zeros, tentar sem zeros (para dados antigos salvos como número)
+    if (!existingData.list || existingData.list.length === 0) {
+      console.log('Não encontrado com zeros, tentando sem zeros (compatibilidade com dados antigos):', cpfSemZeros)
+      checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfSemZeros}")`
+      
+      checkCpfResponse = await fetch(checkCpfUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'xc-token': nocodbToken,
+        },
+      })
+
+      if (!checkCpfResponse.ok) {
+        console.error('Erro ao consultar NocoDB (segunda tentativa):', checkCpfResponse.status)
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: 'Erro ao consultar banco de dados' }),
+        }
+      }
+
+      existingData = await checkCpfResponse.json()
+    }
 
     // Se encontrar registros com o mesmo CPF, retornar número da sorte
     if (existingData.list && existingData.list.length > 0) {

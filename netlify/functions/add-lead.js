@@ -70,15 +70,19 @@ exports.handler = async (event, context) => {
         // Isso preserva zeros à esquerda que podem ser perdidos
         const cpfFormatado = cpfSemMascara.padStart(11, '0')
         
+        // CPF sem zeros à esquerda (para compatibilidade com dados antigos salvos como número)
+        const cpfSemZeros = cpfSemMascara
+        
         // Verificar se CPF já existe no banco de dados
         const nocodbApiUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`
-        // Usar aspas na query para garantir que seja tratado como string pelo NocoDB
-        const checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfFormatado}")`
         
-        console.log('Verificando se CPF já existe:', cpfFormatado)
+        // Tentar buscar primeiro com CPF formatado (com zeros) - para dados novos salvos como texto
+        let checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfFormatado}")`
+        
+        console.log('Verificando se CPF já existe (formato com zeros):', cpfFormatado)
         console.log('URL de verificação:', checkCpfUrl)
         
-        const checkCpfResponse = await fetch(checkCpfUrl, {
+        let checkCpfResponse = await fetch(checkCpfUrl, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -86,24 +90,44 @@ exports.handler = async (event, context) => {
           },
         })
         
+        let existingData = null
+        
         if (checkCpfResponse.ok) {
-          const existingData = await checkCpfResponse.json()
+          existingData = await checkCpfResponse.json()
+        }
+        
+        // Se não encontrou com zeros, tentar sem zeros (para dados antigos salvos como número)
+        if (!existingData || !existingData.list || existingData.list.length === 0) {
+          console.log('Não encontrado com zeros, tentando sem zeros (compatibilidade com dados antigos):', cpfSemZeros)
+          checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfSemZeros}")`
           
-          // Se encontrar registros com o mesmo CPF, retornar erro
-          if (existingData.list && existingData.list.length > 0) {
-            console.log('CPF já cadastrado:', cpfFormatado)
-            console.log('Registros encontrados:', existingData.list.length)
-            return {
-              statusCode: 409,
-              headers,
-              body: JSON.stringify({
-                error: 'CPF já cadastrado',
-                message: 'Este CPF já está cadastrado em nosso sistema. Não é possível realizar mais de um cadastro com o mesmo CPF. Se você já se cadastrou anteriormente, utilize o mesmo CPF para verificar seu número da sorte.',
-              }),
-            }
+          checkCpfResponse = await fetch(checkCpfUrl, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'xc-token': nocodbToken,
+            },
+          })
+          
+          if (checkCpfResponse.ok) {
+            existingData = await checkCpfResponse.json()
+          } else {
+            console.warn('Erro ao verificar CPF existente, continuando com cadastro')
           }
-        } else {
-          console.warn('Erro ao verificar CPF existente, continuando com cadastro')
+        }
+        
+        // Se encontrar registros com o mesmo CPF, retornar erro
+        if (existingData && existingData.list && existingData.list.length > 0) {
+          console.log('CPF já cadastrado:', cpfFormatado)
+          console.log('Registros encontrados:', existingData.list.length)
+          return {
+            statusCode: 409,
+            headers,
+            body: JSON.stringify({
+              error: 'CPF já cadastrado',
+              message: 'Este CPF já está cadastrado em nosso sistema. Não é possível realizar mais de um cadastro com o mesmo CPF. Se você já se cadastrou anteriormente, utilize o mesmo CPF para verificar seu número da sorte.',
+            }),
+          }
         }
         
         const dataToSave = {
