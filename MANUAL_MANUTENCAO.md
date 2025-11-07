@@ -1,6 +1,7 @@
 # Manual de Manutenção - Loteria Encruzilhada
 
 ## 📋 Índice
+
 1. [Visão Geral](#visão-geral)
 2. [Estrutura do Projeto](#estrutura-do-projeto)
 3. [Configuração do Ambiente](#configuração-do-ambiente)
@@ -19,6 +20,7 @@
 Este manual contém todas as informações necessárias para manter e atualizar a página da Loteria Encruzilhada. A aplicação é construída com React + TypeScript + Vite e deployada no Netlify.
 
 ### Tecnologias Utilizadas:
+
 - **Frontend:** React 18, TypeScript, Tailwind CSS
 - **Build:** Vite
 - **Deploy:** Netlify
@@ -59,12 +61,14 @@ lp-sorteio-lotenc/
 ## ⚙️ Configuração do Ambiente
 
 ### Pré-requisitos:
+
 - Node.js 22.21.0
 - pnpm 10.19.0
 - Conta Netlify
 - Conta NocoDB
 
 ### Instalação Local:
+
 ```bash
 # Clonar repositório
 git clone [URL_DO_REPOSITORIO]
@@ -80,6 +84,7 @@ pnpm build
 ```
 
 ### Variáveis de Ambiente (Netlify):
+
 Configure no painel do Netlify (Site settings > Environment variables):
 
 ```
@@ -94,6 +99,7 @@ NOCODB_TABLE=mh713bcf1nlrupa
 ## 🎨 Manutenção de Cores
 
 ### Paleta Atual:
+
 - **Amarelo Principal:** `#f5db17`
 - **Azul Principal:** `#0065b6`
 - **Azul Secundário:** `#2ac4ff`
@@ -103,27 +109,30 @@ NOCODB_TABLE=mh713bcf1nlrupa
 ### Como Alterar Cores:
 
 #### 1. CSS Global (`src/main.css`):
+
 ```css
 :root {
   --background: 55 100% 52%; /* #f5db17 */
-  --primary: 200 100% 35%;   /* #0065b6 */
-  --accent: 200 100% 60%;    /* #2ac4ff */
+  --primary: 200 100% 35%; /* #0065b6 */
+  --accent: 200 100% 60%; /* #2ac4ff */
 }
 ```
 
 #### 2. Componentes (`src/pages/Index.tsx`):
+
 ```tsx
 // Background principal
-className="bg-[#f5db17]"
+className = 'bg-[#f5db17]'
 
 // Azul principal
-className="bg-[#0065b6]"
+className = 'bg-[#0065b6]'
 
 // Azul secundário
-className="bg-[#2ac4ff]"
+className = 'bg-[#2ac4ff]'
 ```
 
 ### Checklist de Cores:
+
 - [ ] Header (azul)
 - [ ] Background principal (amarelo)
 - [ ] Círculo com homem (azul)
@@ -139,6 +148,7 @@ className="bg-[#2ac4ff]"
 ### Textos Principais:
 
 #### 1. Título Principal (`src/pages/Index.tsx`):
+
 ```tsx
 <h1 className="text-5xl lg:text-7xl font-bold text-[#333333] leading-tight">
   Aqui todo dia é dia de mudar de vida!
@@ -146,6 +156,7 @@ className="bg-[#2ac4ff]"
 ```
 
 #### 2. Subtítulo:
+
 ```tsx
 <p className="text-xl lg:text-2xl text-[#333333] font-medium">
   Aqui Compre agora seu bolão e não perca essa oportunidade de mudar de vida!
@@ -153,6 +164,7 @@ className="bg-[#2ac4ff]"
 ```
 
 #### 3. Botão CTA:
+
 ```tsx
 <Button className="bg-[#0065b6] hover:bg-[#0065b6]/90 text-white">
   FALE AGORA
@@ -160,12 +172,14 @@ className="bg-[#2ac4ff]"
 ```
 
 #### 4. Features:
+
 - Números únicos
 - Prêmios incríveis
 - Dinheiro fácil
 - Grandes prêmios
 
 ### Como Alterar Conteúdo:
+
 1. Abra `src/pages/Index.tsx`
 2. Localize o texto desejado
 3. Altere o conteúdo entre as tags
@@ -178,11 +192,13 @@ className="bg-[#2ac4ff]"
 ### Formulário de Cadastro:
 
 #### Arquivo: `src/components/SubscriptionForm.tsx`
+
 - **Campos:** Nome, WhatsApp, Email
 - **Validação:** Campos obrigatórios
 - **Integração:** Netlify Function `add-lead`
 
 #### Como Modificar:
+
 1. Adicionar/remover campos
 2. Alterar validações
 3. Modificar estilos
@@ -190,6 +206,7 @@ className="bg-[#2ac4ff]"
 ### Geração de Números da Sorte:
 
 #### Arquivo: `netlify/functions/add-lead.js`
+
 ```javascript
 // Lógica atual: ID + 1000
 const nextId = await getNextId()
@@ -197,6 +214,7 @@ const luckyNumber = nextId + 1000
 ```
 
 #### Como Alterar:
+
 1. Modificar fórmula de geração
 2. Alterar faixa de números
 3. Implementar outras regras
@@ -204,6 +222,7 @@ const luckyNumber = nextId + 1000
 ### Animações:
 
 #### CSS (`src/main.css`):
+
 ```css
 .animate-fade-in-up {
   animation: fadeInUp 0.8s ease-out;
@@ -228,6 +247,7 @@ const luckyNumber = nextId + 1000
 ### Configuração:
 
 #### 1. Variáveis de Ambiente:
+
 ```
 NOCODB_BASE_URL=https://crm.loteriaencruzilhada.com.br
 NOCODB_TOKEN=seu_token_aqui
@@ -236,27 +256,31 @@ NOCODB_TABLE=mh713bcf1nlrupa
 ```
 
 #### 2. Estrutura da Tabela:
-| Coluna | Tipo | Descrição |
-|--------|------|-----------|
-| `#` | Number | ID automático |
-| `usuario` | Text | Nome do usuário |
-| `whatsapp` | Text | Número do WhatsApp |
-| `email` | Email | Email do usuário |
-| `# numero_sorte` | Number | Número da sorte |
-| `criado_em` | DateTime | Data de criação |
+
+| Coluna           | Tipo     | Descrição          |
+| ---------------- | -------- | ------------------ |
+| `#`              | Number   | ID automático      |
+| `usuario`        | Text     | Nome do usuário    |
+| `whatsapp`       | Text     | Número do WhatsApp |
+| `email`          | Email    | Email do usuário   |
+| `# numero_sorte` | Number   | Número da sorte    |
+| `criado_em`      | DateTime | Data de criação    |
 
 ### Troubleshooting NocoDB:
 
 #### Erro: "Configuração do banco de dados não encontrada"
+
 - Verificar se `NOCODB_BASE_URL` e `NOCODB_TOKEN` estão configurados
 - Verificar se o token tem permissões de escrita
 
 #### Erro: "Erro ao salvar no banco de dados"
+
 - Verificar se a URL da API está correta
 - Verificar se o projeto e tabela existem
 - Verificar permissões do token
 
 #### Dados não aparecem na tabela:
+
 - Verificar logs do Netlify Functions
 - Verificar estrutura da tabela
 - Testar API do NocoDB diretamente
@@ -266,12 +290,14 @@ NOCODB_TABLE=mh713bcf1nlrupa
 ## 🚀 Deploy e Publicação
 
 ### Deploy Automático:
+
 - **Trigger:** Push para branch `main`
 - **Build:** `pnpm run build`
 - **Publish:** `dist/`
 - **Functions:** `netlify/functions/`
 
 ### Deploy Manual:
+
 ```bash
 # Build local
 pnpm build
@@ -281,6 +307,7 @@ netlify deploy --prod
 ```
 
 ### Configuração Netlify (`netlify.toml`):
+
 ```toml
 [build]
   command = "pnpm run build"
@@ -307,21 +334,25 @@ netlify deploy --prod
 ### Problemas Comuns:
 
 #### 1. Erro 502 Bad Gateway:
+
 - **Causa:** Problema na função Netlify
 - **Solução:** Verificar logs da função
 - **Prevenção:** Testar função localmente
 
 #### 2. CORS Error:
+
 - **Causa:** Política de CORS
 - **Solução:** Verificar headers na função
 - **Prevenção:** Configurar CORS corretamente
 
 #### 3. Formulário não envia:
+
 - **Causa:** Erro na função ou validação
 - **Solução:** Verificar logs e validações
 - **Prevenção:** Testar formulário
 
 #### 4. Números duplicados:
+
 - **Causa:** Lógica de geração
 - **Solução:** Verificar função `getNextId()`
 - **Prevenção:** Implementar verificação de duplicatas
@@ -329,6 +360,7 @@ netlify deploy --prod
 ### Logs Importantes:
 
 #### Netlify Functions:
+
 ```javascript
 console.log('Dados recebidos:', { name, whatsapp, email })
 console.log('Número da sorte:', luckyNumber)
@@ -336,6 +368,7 @@ console.log('Status NocoDB:', nocodbResponse.status)
 ```
 
 #### NocoDB:
+
 - Verificar se dados chegam corretamente
 - Verificar se API responde
 - Verificar permissões
@@ -345,14 +378,17 @@ console.log('Status NocoDB:', nocodbResponse.status)
 ## 📞 Contatos
 
 ### Desenvolvedor:
+
 - **Email:** [seu-email@exemplo.com]
 - **GitHub:** [seu-usuario-github]
 
 ### Suporte Técnico:
+
 - **Netlify:** [URL do site]
 - **NocoDB:** [URL da instância]
 
 ### Documentação:
+
 - **Netlify Functions:** https://docs.netlify.com/functions/
 - **NocoDB API:** https://docs.nocodb.com/
 - **Tailwind CSS:** https://tailwindcss.com/docs
@@ -362,18 +398,21 @@ console.log('Status NocoDB:', nocodbResponse.status)
 ## 📋 Checklist de Manutenção
 
 ### Semanal:
+
 - [ ] Verificar se formulário está funcionando
 - [ ] Verificar se dados estão sendo salvos no NocoDB
 - [ ] Verificar logs de erro
 - [ ] Testar geração de números da sorte
 
 ### Mensal:
+
 - [ ] Atualizar dependências
 - [ ] Verificar performance
 - [ ] Backup dos dados
 - [ ] Revisar logs de erro
 
 ### Trimestral:
+
 - [ ] Auditoria de segurança
 - [ ] Otimização de performance
 - [ ] Atualização de documentação
@@ -384,24 +423,28 @@ console.log('Status NocoDB:', nocodbResponse.status)
 ## 🔄 Processo de Atualização
 
 ### 1. Preparação:
+
 ```bash
 git pull origin main
 pnpm install
 ```
 
 ### 2. Desenvolvimento:
+
 ```bash
 pnpm dev
 # Fazer alterações
 ```
 
 ### 3. Teste:
+
 ```bash
 pnpm build
 pnpm preview
 ```
 
 ### 4. Deploy:
+
 ```bash
 git add .
 git commit -m "feat: descrição da alteração"
@@ -409,6 +452,7 @@ git push origin main
 ```
 
 ### 5. Verificação:
+
 - Verificar se deploy foi bem-sucedido
 - Testar funcionalidades
 - Verificar logs
