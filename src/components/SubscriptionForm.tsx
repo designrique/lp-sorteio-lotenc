@@ -174,19 +174,19 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
     <section
       ref={ref}
       className={cn(
-        'py-16 md:py-24 transition-opacity duration-500',
+        'py-12 sm:py-16 md:py-24 transition-opacity duration-500 px-4',
         isVisible ? 'animate-fade-in-up' : 'opacity-0',
       )}
     >
-      <div className="max-w-lg mx-auto space-y-8">
+      <div className="max-w-lg mx-auto space-y-6 sm:space-y-8">
         {/* Formulário de Cadastro */}
         <Card className="bg-white shadow-soft">
-          <CardHeader>
-            <CardTitle className="text-2xl md:text-3xl text-center font-bold">
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-xl sm:text-2xl md:text-3xl text-center font-bold">
               Garanta Seu Número da Sorte!
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6 pb-6 sm:pb-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -311,12 +311,12 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
         {/* Formulário de Consulta */}
         {showCheckForm && (
           <Card className="bg-white shadow-soft">
-            <CardHeader>
-              <CardTitle className="text-xl md:text-2xl text-center font-bold">
+            <CardHeader className="px-4 sm:px-6">
+              <CardTitle className="text-lg sm:text-xl md:text-2xl text-center font-bold">
                 CONSULTAR MEU NÚMERO DA SORTE
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 sm:px-6 pb-6 sm:pb-8">
             <Form {...checkForm}>
               <form onSubmit={checkForm.handleSubmit(onCheckSubmit)} className="space-y-6">
                 <FormField
