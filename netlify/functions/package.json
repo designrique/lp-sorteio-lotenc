@@ -2,10 +2,6 @@
   "name": "netlify-functions",
   "version": "1.0.0",
   "description": "Netlify Functions for OG Image generation",
-  "type": "commonjs",
-  "dependencies": {
-    "satori": "^0.10.11",
-    "sharp": "^0.33.0"
-  }
+  "type": "commonjs"
 }
 
