@@ -60,7 +60,6 @@ exports.handler = async (event, context) => {
     const cpfSemMascara = String(cpf.replace(/\D/g, ''))
     
     // Garantir que o CPF tenha 11 dígitos (adicionar zero à esquerda se necessário)
-    // Isso preserva zeros à esquerda que podem ser perdidos
     const cpfFormatado = cpfSemMascara.padStart(11, '0')
     
     // CPF sem zeros à esquerda (para compatibilidade com dados antigos salvos como número)
@@ -69,35 +68,43 @@ exports.handler = async (event, context) => {
     // Consultar CPF no NocoDB
     const nocodbApiUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`
     
-    // Tentar buscar primeiro com CPF formatado (com zeros) - para dados novos salvos como texto
-    let checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfFormatado}")`
+    // Tentar múltiplas formas de busca para garantir compatibilidade
+    const searchVariants = [
+      cpfFormatado,           // Com zeros (ex: "01234567890")
+      cpfSemZeros,            // Sem zeros (ex: "1234567890")
+      String(parseInt(cpfSemZeros)), // Como número convertido para string (remove zeros)
+    ]
     
-    console.log('Consultando CPF no NocoDB (formato com zeros):', cpfFormatado)
-    console.log('URL de consulta:', checkCpfUrl)
+    let existingData = null
+    let foundRecord = null
+    
+    // Tentar cada variante de busca
+    for (const cpfVariant of searchVariants) {
+      // Tentar com aspas (para campos texto)
+      let checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfVariant}")`
+      console.log(`Tentando buscar CPF: "${cpfVariant}"`)
+      
+      let checkCpfResponse = await fetch(checkCpfUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'xc-token': nocodbToken,
+        },
+      })
 
-    let checkCpfResponse = await fetch(checkCpfUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'xc-token': nocodbToken,
-      },
-    })
-
-    if (!checkCpfResponse.ok) {
-      console.error('Erro ao consultar NocoDB:', checkCpfResponse.status)
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: 'Erro ao consultar banco de dados' }),
+      if (checkCpfResponse.ok) {
+        const data = await checkCpfResponse.json()
+        if (data.list && data.list.length > 0) {
+          existingData = data
+          foundRecord = data.list[0]
+          console.log(`CPF encontrado com variante: "${cpfVariant}"`)
+          break
+        }
       }
-    }
-
-    let existingData = await checkCpfResponse.json()
-
-    // Se não encontrou com zeros, tentar sem zeros (para dados antigos salvos como número)
-    if (!existingData.list || existingData.list.length === 0) {
-      console.log('Não encontrado com zeros, tentando sem zeros (compatibilidade com dados antigos):', cpfSemZeros)
-      checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfSemZeros}")`
+      
+      // Tentar sem aspas (para campos numéricos ou compatibilidade)
+      checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,${cpfVariant})`
+      console.log(`Tentando buscar CPF sem aspas: ${cpfVariant}`)
       
       checkCpfResponse = await fetch(checkCpfUrl, {
         method: 'GET',
@@ -107,24 +114,54 @@ exports.handler = async (event, context) => {
         },
       })
 
-      if (!checkCpfResponse.ok) {
-        console.error('Erro ao consultar NocoDB (segunda tentativa):', checkCpfResponse.status)
-        return {
-          statusCode: 500,
-          headers,
-          body: JSON.stringify({ error: 'Erro ao consultar banco de dados' }),
+      if (checkCpfResponse.ok) {
+        const data = await checkCpfResponse.json()
+        if (data.list && data.list.length > 0) {
+          existingData = data
+          foundRecord = data.list[0]
+          console.log(`CPF encontrado sem aspas com variante: ${cpfVariant}`)
+          break
         }
       }
-
-      existingData = await checkCpfResponse.json()
+    }
+    
+    // Se ainda não encontrou, tentar buscar todos e filtrar manualmente (último recurso)
+    if (!foundRecord) {
+      console.log('Tentando busca ampla e filtro manual...')
+      const allRecordsUrl = `${nocodbApiUrl}?limit=1000`
+      const allRecordsResponse = await fetch(allRecordsUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'xc-token': nocodbToken,
+        },
+      })
+      
+      if (allRecordsResponse.ok) {
+        const allData = await allRecordsResponse.json()
+        if (allData.list && allData.list.length > 0) {
+          // Normalizar CPFs para comparação
+          foundRecord = allData.list.find(record => {
+            const recordCpf = String(record.cpf || '').replace(/\D/g, '').padStart(11, '0')
+            const searchCpf = cpfFormatado
+            return recordCpf === searchCpf || recordCpf === cpfSemZeros
+          })
+          
+          if (foundRecord) {
+            console.log('CPF encontrado através de busca ampla')
+            existingData = { list: [foundRecord] }
+          }
+        }
+      }
     }
 
     // Se encontrar registros com o mesmo CPF, retornar número da sorte
-    if (existingData.list && existingData.list.length > 0) {
-      const registro = existingData.list[0]
+    if (foundRecord || (existingData && existingData.list && existingData.list.length > 0)) {
+      const registro = foundRecord || (existingData && existingData.list[0])
       const numeroSorte = registro.numero_sorte || registro['numero_sorte']
       
       console.log('Número da sorte encontrado:', numeroSorte)
+      console.log('Registro encontrado:', JSON.stringify(registro))
 
       return {
         statusCode: 200,
