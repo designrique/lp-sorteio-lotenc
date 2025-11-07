@@ -10,20 +10,24 @@
 [[plugins]]
   package = "@netlify/plugin-functions-install-core"
 
+# Redirects específicos para APIs - devem vir ANTES do catch-all
 [[redirects]]
   from = "/api/og-image"
   to = "/.netlify/functions/og-image"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/api/add-lead"
   to = "/.netlify/functions/add-lead"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/api/check-lucky-number"
   to = "/.netlify/functions/check-lucky-number"
   status = 200
+  force = true
 
 # Exceção para funções Netlify - não redirecionar
 [[redirects]]
