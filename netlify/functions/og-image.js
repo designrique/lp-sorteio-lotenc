@@ -17,7 +17,8 @@ exports.handler = async (event, context) => {
 
   try {
     console.log('=== Função og-image executada ===')
-    console.log('Event:', JSON.stringify(event, null, 2))
+    console.log('Método HTTP:', event.httpMethod)
+    console.log('Path:', event.path)
     
     // Parâmetros opcionais da query string
     const { title, description } = event.queryStringParameters || {}
