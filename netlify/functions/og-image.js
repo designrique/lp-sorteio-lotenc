@@ -1,3 +1,6 @@
+const fs = require('fs')
+const path = require('path')
+
 exports.handler = async (event, context) => {
   // Configurar CORS
   const headers = {
@@ -20,185 +23,46 @@ exports.handler = async (event, context) => {
     console.log('Método HTTP:', event.httpMethod)
     console.log('Path:', event.path)
     
-    // Parâmetros opcionais da query string
-    const { title, description } = event.queryStringParameters || {}
+    // Tentar ler a imagem estática do site (snapshot)
+    // A imagem está em public/og-image.png que será copiada para dist/og-image.png no build
+    const imagePath = path.join(process.cwd(), 'dist', 'og-image.png')
     
-    // Valores padrão
-    const ogTitle = title || 'O que você faria se acordasse milionário em 2026?'
-    const ogDescription = description || 'A Mega da Virada vem aí e sua chance está na Loteria Encruzilhada!'
+    console.log('Tentando ler imagem estática de:', imagePath)
     
-    console.log('Título:', ogTitle)
-    console.log('Descrição:', ogDescription)
-    
-    // Tentar carregar dependências
-    let satori, sharp
+    let imageBuffer
     try {
-      console.log('Tentando carregar satori...')
-      const satoriModule = require('satori')
-      // satori pode ser exportado como default ou como função direta
-      satori = satoriModule.default || satoriModule
-      console.log('satori carregado com sucesso, tipo:', typeof satori)
-      
-      if (typeof satori !== 'function') {
-        console.error('satori não é uma função! Tipo:', typeof satori)
-        console.error('satoriModule:', JSON.stringify(Object.keys(satoriModule || {})))
-        throw new Error('satori não é uma função. Tipo recebido: ' + typeof satori)
-      }
-      
-      console.log('Tentando carregar sharp...')
-      const sharpModule = require('sharp')
-      sharp = sharpModule.default || sharpModule
-      console.log('sharp carregado com sucesso, tipo:', typeof sharp)
-      
-      if (typeof sharp !== 'function') {
-        console.error('sharp não é uma função! Tipo:', typeof sharp)
-        throw new Error('sharp não é uma função. Tipo recebido: ' + typeof sharp)
-      }
-    } catch (requireError) {
-      console.error('ERRO ao carregar dependências:', requireError.message)
-      console.error('Stack:', requireError.stack)
-      
-      // Retornar erro ao invés de redirect
-      return {
-        statusCode: 500,
-        headers: {
-          ...headers,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          error: 'Dependências não encontradas',
-          message: requireError.message,
-          hint: 'Verifique se satori e sharp estão instalados em netlify/functions/package.json'
-        }),
+      // Tentar ler do dist primeiro (produção)
+      imageBuffer = fs.readFileSync(imagePath)
+      console.log('Imagem lida do dist com sucesso, tamanho:', imageBuffer.length, 'bytes')
+    } catch (distError) {
+      console.log('Não encontrado no dist, tentando public...')
+      // Fallback: tentar ler do public (desenvolvimento ou se dist não existir)
+      const publicPath = path.join(process.cwd(), 'public', 'og-image.png')
+      try {
+        imageBuffer = fs.readFileSync(publicPath)
+        console.log('Imagem lida do public com sucesso, tamanho:', imageBuffer.length, 'bytes')
+      } catch (publicError) {
+        // Se não encontrar em nenhum lugar, tentar baixar do site
+        console.log('Imagem não encontrada localmente, tentando baixar do site...')
+        const https = require('https')
+        const siteUrl = 'https://sorteio.loteriaencruzilhada.com.br/og-image.png'
+        
+        imageBuffer = await new Promise((resolve, reject) => {
+          https.get(siteUrl, (res) => {
+            if (res.statusCode !== 200) {
+              reject(new Error(`Falha ao baixar imagem: ${res.statusCode}`))
+              return
+            }
+            const chunks = []
+            res.on('data', (chunk) => chunks.push(chunk))
+            res.on('end', () => resolve(Buffer.concat(chunks)))
+            res.on('error', reject)
+          }).on('error', reject)
+        })
+        
+        console.log('Imagem baixada do site com sucesso, tamanho:', imageBuffer.length, 'bytes')
       }
     }
-    
-    console.log('Carregando fonte do Google Fonts...')
-    
-    // Carregar fonte Roboto do Google Fonts
-    const https = require('https')
-    const fontUrl = 'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxP.ttf'
-    
-    const fontData = await new Promise((resolve, reject) => {
-      https.get(fontUrl, (res) => {
-        if (res.statusCode !== 200) {
-          reject(new Error(`Falha ao baixar fonte: ${res.statusCode}`))
-          return
-        }
-        const chunks = []
-        res.on('data', (chunk) => chunks.push(chunk))
-        res.on('end', () => resolve(Buffer.concat(chunks)))
-        res.on('error', reject)
-      }).on('error', reject)
-    })
-    
-    console.log('Fonte carregada com sucesso, tamanho:', fontData.length, 'bytes')
-    
-    // Preparar array de fontes para o satori (obrigatório ter pelo menos uma)
-    const fonts = [
-      {
-        name: 'Roboto',
-        data: fontData,
-        weight: 400,
-        style: 'normal',
-      },
-      {
-        name: 'Roboto',
-        data: fontData,
-        weight: 600,
-        style: 'normal',
-      },
-      {
-        name: 'Roboto',
-        data: fontData,
-        weight: 700,
-        style: 'normal',
-      },
-    ]
-    
-    console.log('Gerando SVG com Satori...')
-    console.log('Fontes carregadas:', fonts.length)
-    
-    // Criar o SVG usando Satori
-    const svg = await satori(
-      {
-        type: 'div',
-        props: {
-          style: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            height: '100%',
-            background: 'linear-gradient(135deg, #ebce10 0%, #001ea7 100%)',
-            padding: '80px',
-            fontFamily: 'Roboto, sans-serif',
-          },
-          children: [
-            {
-              type: 'div',
-              props: {
-                style: {
-                  fontSize: '64px',
-                  fontWeight: 'bold',
-                  color: '#333333',
-                  textAlign: 'center',
-                  marginBottom: '30px',
-                  lineHeight: '1.2',
-                  maxWidth: '900px',
-                },
-                children: ogTitle,
-              },
-            },
-            {
-              type: 'div',
-              props: {
-                style: {
-                  fontSize: '32px',
-                  color: '#333333',
-                  textAlign: 'center',
-                  opacity: 0.9,
-                  maxWidth: '800px',
-                  marginBottom: '40px',
-                },
-                children: ogDescription,
-              },
-            },
-            {
-              type: 'div',
-              props: {
-                style: {
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  fontSize: '28px',
-                  color: '#333333',
-                  fontWeight: '600',
-                },
-                children: '🎯 Prêmio de R$ 850 milhões',
-              },
-            },
-          ],
-        },
-      },
-      {
-        width: 1200,
-        height: 630,
-        fonts: fonts,
-      }
-    )
-
-    console.log('SVG gerado com sucesso, tamanho:', svg.length, 'caracteres')
-    console.log('Convertendo SVG para PNG com Sharp...')
-
-    // Converter SVG para PNG usando Sharp
-    const png = await sharp(Buffer.from(svg))
-      .png()
-      .toBuffer()
-
-    console.log('PNG gerado com sucesso!')
-    console.log('Tamanho do PNG:', png.length, 'bytes')
 
     return {
       statusCode: 200,
@@ -207,16 +71,15 @@ exports.handler = async (event, context) => {
         'Content-Type': 'image/png',
         'Cache-Control': 'public, max-age=3600, s-maxage=3600',
       },
-      body: png.toString('base64'),
+      body: imageBuffer.toString('base64'),
       isBase64Encoded: true,
     }
   } catch (error) {
-    console.error('=== ERRO ao gerar OG Image ===')
+    console.error('=== ERRO ao servir OG Image ===')
     console.error('Mensagem:', error.message)
     console.error('Stack trace:', error.stack)
-    console.error('Error completo:', JSON.stringify(error, Object.getOwnPropertyNames(error)))
     
-    // Retornar erro detalhado ao invés de redirect
+    // Retornar erro detalhado
     return {
       statusCode: 500,
       headers: {
@@ -224,10 +87,10 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ 
-        error: 'Erro ao gerar imagem',
+        error: 'Erro ao servir imagem',
         message: error.message,
         stack: error.stack,
-        hint: 'Verifique os logs do Netlify Functions para mais detalhes'
+        hint: 'Verifique se og-image.png existe em public/ ou dist/'
       }),
     }
   }
