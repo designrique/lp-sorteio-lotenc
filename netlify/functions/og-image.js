@@ -33,12 +33,26 @@ exports.handler = async (event, context) => {
     let satori, sharp
     try {
       console.log('Tentando carregar satori...')
-      satori = require('satori')
-      console.log('satori carregado com sucesso')
+      const satoriModule = require('satori')
+      // satori pode ser exportado como default ou como função direta
+      satori = satoriModule.default || satoriModule
+      console.log('satori carregado com sucesso, tipo:', typeof satori)
+      
+      if (typeof satori !== 'function') {
+        console.error('satori não é uma função! Tipo:', typeof satori)
+        console.error('satoriModule:', JSON.stringify(Object.keys(satoriModule || {})))
+        throw new Error('satori não é uma função. Tipo recebido: ' + typeof satori)
+      }
       
       console.log('Tentando carregar sharp...')
-      sharp = require('sharp')
-      console.log('sharp carregado com sucesso')
+      const sharpModule = require('sharp')
+      sharp = sharpModule.default || sharpModule
+      console.log('sharp carregado com sucesso, tipo:', typeof sharp)
+      
+      if (typeof sharp !== 'function') {
+        console.error('sharp não é uma função! Tipo:', typeof sharp)
+        throw new Error('sharp não é uma função. Tipo recebido: ' + typeof sharp)
+      }
     } catch (requireError) {
       console.error('ERRO ao carregar dependências:', requireError.message)
       console.error('Stack:', requireError.stack)
