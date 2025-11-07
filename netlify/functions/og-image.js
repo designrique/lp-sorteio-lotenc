@@ -1,8 +1,23 @@
-const satori = require('satori')
-const sharp = require('sharp')
-
 exports.handler = async (event, context) => {
+  // Configurar CORS
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  }
+
+  // Responder a requisições OPTIONS (preflight)
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: '',
+    }
+  }
+
   try {
+    console.log('Função og-image executada')
+    
     // Parâmetros opcionais da query string
     const { title, description } = event.queryStringParameters || {}
     
@@ -10,7 +25,27 @@ exports.handler = async (event, context) => {
     const ogTitle = title || 'O que você faria se acordasse milionário em 2026?'
     const ogDescription = description || 'A Mega da Virada vem aí e sua chance está na Loteria Encruzilhada!'
     
-    // Criar o SVG usando Satori com estrutura JSX correta
+    // Tentar usar satori e sharp se disponíveis
+    let satori, sharp
+    try {
+      satori = require('satori')
+      sharp = require('sharp')
+    } catch (requireError) {
+      console.error('Erro ao carregar dependências:', requireError)
+      // Fallback: retornar imagem estática se disponível
+      return {
+        statusCode: 302,
+        headers: {
+          ...headers,
+          Location: '/og-image.png',
+        },
+        body: '',
+      }
+    }
+    
+    console.log('Gerando OG Image com título:', ogTitle)
+    
+    // Criar o SVG usando Satori
     const svg = await satori(
       {
         type: 'div',
@@ -80,14 +115,19 @@ exports.handler = async (event, context) => {
       }
     )
 
+    console.log('SVG gerado com sucesso, convertendo para PNG...')
+
     // Converter SVG para PNG usando Sharp
     const png = await sharp(Buffer.from(svg))
       .png()
       .toBuffer()
 
+    console.log('PNG gerado com sucesso, tamanho:', png.length, 'bytes')
+
     return {
       statusCode: 200,
       headers: {
+        ...headers,
         'Content-Type': 'image/png',
         'Cache-Control': 'public, max-age=3600, s-maxage=3600',
       },
@@ -96,12 +136,16 @@ exports.handler = async (event, context) => {
     }
   } catch (error) {
     console.error('Erro ao gerar OG Image:', error)
+    console.error('Stack trace:', error.stack)
+    
+    // Fallback: retornar imagem estática se disponível
     return {
-      statusCode: 500,
+      statusCode: 302,
       headers: {
-        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        Location: '/og-image.png',
       },
-      body: JSON.stringify({ error: 'Erro ao gerar imagem', details: error.message }),
+      body: '',
     }
   }
 }
