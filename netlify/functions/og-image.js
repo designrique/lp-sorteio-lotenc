@@ -73,7 +73,51 @@ exports.handler = async (event, context) => {
       }
     }
     
+    console.log('Carregando fonte do Google Fonts...')
+    
+    // Carregar fonte Roboto do Google Fonts
+    const https = require('https')
+    const fontUrl = 'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxP.ttf'
+    
+    const fontData = await new Promise((resolve, reject) => {
+      https.get(fontUrl, (res) => {
+        if (res.statusCode !== 200) {
+          reject(new Error(`Falha ao baixar fonte: ${res.statusCode}`))
+          return
+        }
+        const chunks = []
+        res.on('data', (chunk) => chunks.push(chunk))
+        res.on('end', () => resolve(Buffer.concat(chunks)))
+        res.on('error', reject)
+      }).on('error', reject)
+    })
+    
+    console.log('Fonte carregada com sucesso, tamanho:', fontData.length, 'bytes')
+    
+    // Preparar array de fontes para o satori (obrigatório ter pelo menos uma)
+    const fonts = [
+      {
+        name: 'Roboto',
+        data: fontData,
+        weight: 400,
+        style: 'normal',
+      },
+      {
+        name: 'Roboto',
+        data: fontData,
+        weight: 600,
+        style: 'normal',
+      },
+      {
+        name: 'Roboto',
+        data: fontData,
+        weight: 700,
+        style: 'normal',
+      },
+    ]
+    
     console.log('Gerando SVG com Satori...')
+    console.log('Fontes carregadas:', fonts.length)
     
     // Criar o SVG usando Satori
     const svg = await satori(
@@ -89,7 +133,7 @@ exports.handler = async (event, context) => {
             height: '100%',
             background: 'linear-gradient(135deg, #ebce10 0%, #001ea7 100%)',
             padding: '80px',
-            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontFamily: 'Roboto, sans-serif',
           },
           children: [
             {
@@ -141,7 +185,7 @@ exports.handler = async (event, context) => {
       {
         width: 1200,
         height: 630,
-        fonts: [],
+        fonts: fonts,
       }
     )
 
