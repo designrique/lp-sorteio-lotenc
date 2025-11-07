@@ -16,7 +16,8 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    console.log('Função og-image executada')
+    console.log('=== Função og-image executada ===')
+    console.log('Event:', JSON.stringify(event, null, 2))
     
     // Parâmetros opcionais da query string
     const { title, description } = event.queryStringParameters || {}
@@ -25,25 +26,39 @@ exports.handler = async (event, context) => {
     const ogTitle = title || 'O que você faria se acordasse milionário em 2026?'
     const ogDescription = description || 'A Mega da Virada vem aí e sua chance está na Loteria Encruzilhada!'
     
-    // Tentar usar satori e sharp se disponíveis
+    console.log('Título:', ogTitle)
+    console.log('Descrição:', ogDescription)
+    
+    // Tentar carregar dependências
     let satori, sharp
     try {
+      console.log('Tentando carregar satori...')
       satori = require('satori')
+      console.log('satori carregado com sucesso')
+      
+      console.log('Tentando carregar sharp...')
       sharp = require('sharp')
+      console.log('sharp carregado com sucesso')
     } catch (requireError) {
-      console.error('Erro ao carregar dependências:', requireError)
-      // Fallback: retornar imagem estática se disponível
+      console.error('ERRO ao carregar dependências:', requireError.message)
+      console.error('Stack:', requireError.stack)
+      
+      // Retornar erro ao invés de redirect
       return {
-        statusCode: 302,
+        statusCode: 500,
         headers: {
           ...headers,
-          Location: '/og-image.png',
+          'Content-Type': 'application/json',
         },
-        body: '',
+        body: JSON.stringify({ 
+          error: 'Dependências não encontradas',
+          message: requireError.message,
+          hint: 'Verifique se satori e sharp estão instalados em netlify/functions/package.json'
+        }),
       }
     }
     
-    console.log('Gerando OG Image com título:', ogTitle)
+    console.log('Gerando SVG com Satori...')
     
     // Criar o SVG usando Satori
     const svg = await satori(
@@ -115,14 +130,16 @@ exports.handler = async (event, context) => {
       }
     )
 
-    console.log('SVG gerado com sucesso, convertendo para PNG...')
+    console.log('SVG gerado com sucesso, tamanho:', svg.length, 'caracteres')
+    console.log('Convertendo SVG para PNG com Sharp...')
 
     // Converter SVG para PNG usando Sharp
     const png = await sharp(Buffer.from(svg))
       .png()
       .toBuffer()
 
-    console.log('PNG gerado com sucesso, tamanho:', png.length, 'bytes')
+    console.log('PNG gerado com sucesso!')
+    console.log('Tamanho do PNG:', png.length, 'bytes')
 
     return {
       statusCode: 200,
@@ -135,17 +152,24 @@ exports.handler = async (event, context) => {
       isBase64Encoded: true,
     }
   } catch (error) {
-    console.error('Erro ao gerar OG Image:', error)
+    console.error('=== ERRO ao gerar OG Image ===')
+    console.error('Mensagem:', error.message)
     console.error('Stack trace:', error.stack)
+    console.error('Error completo:', JSON.stringify(error, Object.getOwnPropertyNames(error)))
     
-    // Fallback: retornar imagem estática se disponível
+    // Retornar erro detalhado ao invés de redirect
     return {
-      statusCode: 302,
+      statusCode: 500,
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        Location: '/og-image.png',
+        ...headers,
+        'Content-Type': 'application/json',
       },
-      body: '',
+      body: JSON.stringify({ 
+        error: 'Erro ao gerar imagem',
+        message: error.message,
+        stack: error.stack,
+        hint: 'Verifique os logs do Netlify Functions para mais detalhes'
+      }),
     }
   }
 }
