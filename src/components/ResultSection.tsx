@@ -32,17 +32,17 @@ export const ResultSection = ({ luckyNumbers, totalBoloes, ehPrimeiraCompra }: R
               {luckyNumbers.map((numero, index) => (
                 <div 
                   key={index}
-                  className="bg-white/20 rounded-lg p-3 sm:p-4"
+                  className="bg-white rounded-lg p-4 sm:p-5 shadow-lg border-2 border-primary-foreground/20 hover:border-primary-foreground/40 transition-all duration-200 hover:shadow-xl hover:scale-105"
                 >
-                  <p className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-widest font-display">
+                  <p className="text-2xl sm:text-3xl md:text-4xl font-black text-primary tracking-widest font-display text-center">
                     {numero}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="bg-white/20 rounded-lg p-3 sm:p-4 inline-block">
-              <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-widest font-display">
+            <div className="bg-white rounded-lg p-6 sm:p-8 shadow-lg border-2 border-primary-foreground/20 hover:border-primary-foreground/40 transition-all duration-200 inline-block">
+              <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-primary tracking-widest font-display">
                 {luckyNumbers[0]}
               </p>
             </div>

@@ -436,15 +436,20 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
                   )}
                 />
                 {luckyNumberFound && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                    <p className="text-sm text-green-800 mb-2">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 sm:p-6 text-center">
+                    <p className="text-sm sm:text-base text-green-800 mb-4 font-semibold">
                       {luckyNumberFound.includes(',') ? 'Seus números da sorte são:' : 'Seu número da sorte é:'}
                     </p>
-                    <div className="flex flex-wrap gap-2 justify-center">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                       {luckyNumberFound.split(', ').map((numero, index) => (
-                        <p key={index} className="text-2xl sm:text-3xl font-bold text-green-900">
-                          {numero.trim()}
-                        </p>
+                        <div 
+                          key={index}
+                          className="bg-white rounded-lg p-4 sm:p-5 shadow-md border-2 border-green-300 hover:border-green-500 transition-all duration-200 hover:shadow-lg hover:scale-105"
+                        >
+                          <p className="text-xl sm:text-2xl md:text-3xl font-black text-green-900 tracking-widest font-display text-center">
+                            {numero.trim()}
+                          </p>
+                        </div>
                       ))}
                     </div>
                   </div>
