@@ -296,16 +296,20 @@ exports.handler = async (event, context) => {
     }
 
     // Criar registros de números da sorte
-    const numerosParaSalvar = novosNumeros.map((numero, index) => ({
-      participante_id: participanteId,
-      cpf: cpfFormatado,
-      numero_sorte: numero,
-      numero_formatado: numero.toString().padStart(4, '0'),
-      bolao_sequencia: proximaSequencia + index,
-      origem: 'landing_page',
-      status: 'ativo',
-      criado_em: timestamp,
-    }))
+    const numerosParaSalvar = novosNumeros.map((numero, index) => {
+      const numeroData = {
+        participante_id: participanteId,
+        cpf: cpfFormatado, // CPF como string com zeros à esquerda
+        numero_sorte: numero,
+        numero_formatado: numero.toString().padStart(4, '0'),
+        bolao_sequencia: proximaSequencia + index,
+        origem: 'landing_page',
+        status: 'ativo',
+        criado_em: timestamp,
+      }
+      console.log(`Dados do número ${index + 1} a salvar:`, JSON.stringify(numeroData))
+      return numeroData
+    })
 
     // Salvar cada número da sorte
     const numerosSalvos = []
@@ -322,10 +326,15 @@ exports.handler = async (event, context) => {
 
         if (numeroResponse.ok) {
           const numeroSalvo = await numeroResponse.json()
+          console.log(`✅ Número ${numeroData.numero_formatado} salvo com sucesso:`, JSON.stringify(numeroSalvo))
           numerosSalvos.push(numeroData.numero_formatado)
         } else {
           const errorText = await numeroResponse.text()
-          console.error(`Erro ao salvar número ${numeroData.numero_formatado}:`, errorText)
+          console.error(`❌ Erro ao salvar número ${numeroData.numero_formatado}:`, {
+            status: numeroResponse.status,
+            error: errorText,
+            dadosEnviados: JSON.stringify(numeroData),
+          })
         }
       } catch (error) {
         console.error(`Erro ao salvar número ${numeroData.numero_formatado}:`, error)

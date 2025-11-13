@@ -133,6 +133,32 @@ exports.handler = async (event, context) => {
     // Buscar todos os números da sorte do participante
     let numerosSorte = []
     
+    // Primeiro, vamos buscar TODOS os números da sorte para ver o que tem no banco
+    console.log('Buscando TODOS os números da sorte para debug...')
+    try {
+      const todosNumerosUrl = `${numerosUrl}?limit=100`
+      const todosNumerosResponse = await fetch(todosNumerosUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'xc-token': nocodbToken,
+        },
+      })
+      
+      if (todosNumerosResponse.ok) {
+        const todosNumerosData = await todosNumerosResponse.json()
+        console.log(`Total de números no banco: ${todosNumerosData.list?.length || 0}`)
+        if (todosNumerosData.list && todosNumerosData.list.length > 0) {
+          console.log('Exemplos de CPFs no banco:')
+          todosNumerosData.list.slice(0, 5).forEach((num, idx) => {
+            console.log(`  ${idx + 1}. CPF: "${num.cpf}" (tipo: ${typeof num.cpf}), numero_formatado: "${num.numero_formatado}"`)
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao buscar todos os números:', error)
+    }
+    
     // Buscar números usando CPF (mesmo se não encontrou participante, pode ter números)
     // Como o campo CPF agora é Single Line Text, vamos buscar exatamente como está salvo
     const searchVariantsNumeros = [
