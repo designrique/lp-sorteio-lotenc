@@ -444,9 +444,9 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
                       {luckyNumberFound.split(', ').map((numero, index) => (
                         <div 
                           key={index}
-                          className="bg-white rounded-lg p-4 sm:p-5 shadow-md border-2 border-green-300 hover:border-green-500 transition-all duration-200 hover:shadow-lg hover:scale-105"
+                          className="bg-white rounded-lg p-3 sm:p-4 shadow-md border-2 border-green-300 hover:border-green-500 transition-all duration-200 hover:shadow-lg hover:scale-105 overflow-hidden flex items-center justify-center min-h-[70px] sm:min-h-[90px]"
                         >
-                          <p className="text-xl sm:text-2xl md:text-3xl font-black text-green-900 tracking-widest font-display text-center">
+                          <p className="text-lg sm:text-xl md:text-2xl font-black text-green-900 tracking-wide font-display text-center break-words">
                             {numero.trim()}
                           </p>
                         </div>

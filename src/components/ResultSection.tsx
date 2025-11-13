@@ -32,9 +32,9 @@ export const ResultSection = ({ luckyNumbers, totalBoloes, ehPrimeiraCompra }: R
               {luckyNumbers.map((numero, index) => (
                 <div 
                   key={index}
-                  className="bg-white rounded-lg p-4 sm:p-5 shadow-lg border-2 border-primary-foreground/20 hover:border-primary-foreground/40 transition-all duration-200 hover:shadow-xl hover:scale-105"
+                  className="bg-white rounded-lg p-3 sm:p-4 shadow-lg border-2 border-primary-foreground/20 hover:border-primary-foreground/40 transition-all duration-200 hover:shadow-xl hover:scale-105 overflow-hidden flex items-center justify-center min-h-[80px] sm:min-h-[100px]"
                 >
-                  <p className="text-2xl sm:text-3xl md:text-4xl font-black text-primary tracking-widest font-display text-center">
+                  <p className="text-xl sm:text-2xl md:text-3xl font-black text-primary tracking-wide font-display text-center break-words">
                     {numero}
                   </p>
                 </div>
