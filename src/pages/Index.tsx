@@ -113,7 +113,7 @@ const Index = () => {
                   </div>
                   <div className="flex items-start space-x-2 sm:space-x-3">
                     <span className="text-xl sm:text-2xl flex-shrink-0">🏍️</span>
-                    <span className="text-base sm:text-lg lg:text-xl font-semibold text-[#333333]">+ Moto elétrica (sorteada entre quem comprar bolão)</span>
+                    <span className="text-base sm:text-lg lg:text-xl font-semibold text-[#333333]">+ Moto elétrica avaliada em mais de 10mil reais (para quem comprar bolão a partir de R$130)</span>
                   </div>
                 </div>
                 
