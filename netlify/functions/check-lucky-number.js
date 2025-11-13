@@ -174,62 +174,58 @@ exports.handler = async (event, context) => {
       console.error('Erro ao buscar todos os números:', error)
     }
     
-    // Buscar números usando CPF (mesmo se não encontrou participante, pode ter números)
-    // Como o campo CPF agora é Single Line Text, vamos buscar exatamente como está salvo
-    const searchVariantsNumeros = [
-      cpfFormatado, // Com zeros à esquerda (formato padrão)
-      cpfFormatado.replace(/^0+/, ''), // Sem zeros à esquerda (compatibilidade)
-    ]
+    // Buscar números usando CPF
+    // Estratégia: buscar todos os números e filtrar em memória pelo CPF
+    // Isso garante que encontramos todos os números mesmo se a query do NocoDB falhar
+    console.log(`Buscando números com CPF: "${cpfFormatado}"`)
     
-    for (const cpfVariant of searchVariantsNumeros) {
-      // Adicionar limit para buscar todos os registros
-      const numerosCheckUrl = `${numerosUrl}?where=(cpf,eq,"${cpfVariant}")&sort=bolao_sequencia&limit=1000`
-      console.log(`Buscando números com CPF: "${cpfVariant}"`)
-      
-      try {
-        const numerosResponse = await fetch(numerosCheckUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'xc-token': nocodbToken,
-          },
-        })
+    try {
+      // Buscar TODOS os números (ou pelo menos muitos) e filtrar em memória
+      const todosNumerosUrl = `${numerosUrl}?sort=bolao_sequencia&limit=1000`
+      const numerosResponse = await fetch(todosNumerosUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'xc-token': nocodbToken,
+        },
+      })
 
-        if (numerosResponse.ok) {
-          const numerosData = await numerosResponse.json()
-          console.log('Resposta da busca de números:', {
-            status: numerosResponse.status,
-            totalEncontrado: numerosData.list?.length || 0,
-            cpfBuscado: cpfVariant,
+      if (numerosResponse.ok) {
+        const numerosData = await numerosResponse.json()
+        console.log(`Total de números retornados pela API: ${numerosData.list?.length || 0}`)
+        
+        if (numerosData.list && numerosData.list.length > 0) {
+          // Normalizar CPF buscado para comparação
+          const cpfBuscadoNormalizado = cpfFormatado.replace(/\D/g, '').padStart(11, '0')
+          const cpfBuscadoSemZeros = cpfBuscadoNormalizado.replace(/^0+/, '')
+          
+          // Filtrar números pelo CPF em memória
+          const numerosFiltrados = numerosData.list.filter(record => {
+            const recordCpf = String(record.cpf || '').trim()
+            const recordCpfNormalizado = recordCpf.replace(/\D/g, '').padStart(11, '0')
+            const recordCpfSemZeros = recordCpfNormalizado.replace(/^0+/, '')
+            
+            // Comparar com e sem zeros à esquerda
+            return recordCpfNormalizado === cpfBuscadoNormalizado || 
+                   recordCpfSemZeros === cpfBuscadoSemZeros ||
+                   recordCpfNormalizado === cpfBuscadoSemZeros ||
+                   recordCpfSemZeros === cpfBuscadoNormalizado
           })
           
-          if (numerosData.list && numerosData.list.length > 0) {
-            console.log(`Encontrados ${numerosData.list.length} registro(s) na busca. Processando...`)
+          console.log(`Números filtrados pelo CPF "${cpfFormatado}": ${numerosFiltrados.length}`)
+          
+          if (numerosFiltrados.length > 0) {
+            console.log(`Encontrados ${numerosFiltrados.length} registro(s) com CPF correspondente. Processando...`)
             
             // Processar todos os registros encontrados
-            const novosNumeros = numerosData.list.map((record, index) => {
+            const novosNumeros = numerosFiltrados.map((record, index) => {
               // Log detalhado do registro
               console.log(`Registro ${index + 1}:`, {
                 cpf: record.cpf,
-                cpfTipo: typeof record.cpf,
-                numero_sorte: record.numero_sorte,
                 numero_formatado: record.numero_formatado,
                 bolao_sequencia: record.bolao_sequencia,
-                participante_id: record.participante_id,
-                todosCampos: Object.keys(record),
+                participante_id: record.participante_id || record.participante_Id || 'NULL',
               })
-              
-              // Normalizar CPF do registro para comparação
-              const recordCpfNormalizado = String(record.cpf || '').trim().replace(/\D/g, '').padStart(11, '0')
-              const cpfBuscadoNormalizado = cpfVariant.replace(/\D/g, '').padStart(11, '0')
-              
-              console.log(`Comparando CPFs: registro="${recordCpfNormalizado}" vs buscado="${cpfBuscadoNormalizado}"`)
-              
-              // Verificar se o CPF corresponde (normalizado)
-              if (recordCpfNormalizado !== cpfBuscadoNormalizado) {
-                console.log(`⚠️ CPF não corresponde - ignorando registro ${index + 1}`)
-                return null // Ignorar se não corresponder
-              }
               
               // Formatar número da sorte
               let numeroFormatado = null
@@ -244,8 +240,6 @@ exports.handler = async (event, context) => {
                 return null
               }
               
-              console.log(`✅ Número formatado: ${numeroFormatado}`)
-              
               return {
                 numero: numeroFormatado,
                 sequencia: record.bolao_sequencia || null,
@@ -258,27 +252,24 @@ exports.handler = async (event, context) => {
             
             console.log(`Números válidos após processamento: ${novosNumeros.length}`)
             
-            // Adicionar apenas números novos (evitar duplicatas)
+            // Adicionar todos os números encontrados (evitar duplicatas por número)
             const numerosExistentes = new Set(numerosSorte.map(n => n.numero))
             const numerosNovos = novosNumeros.filter(n => !numerosExistentes.has(n.numero))
             numerosSorte = [...numerosSorte, ...numerosNovos]
             
             if (numerosNovos.length > 0) {
-              console.log(`${numerosNovos.length} novo(s) número(s) encontrado(s) com CPF "${cpfVariant}"`)
+              console.log(`✅ ${numerosNovos.length} número(s) encontrado(s) com CPF "${cpfFormatado}"`)
             }
-            
-            // Se encontrou números com o CPF formatado (com zeros), não precisa tentar outras variantes
-            if (cpfVariant === cpfFormatado && numerosSorte.length > 0) {
-              break
-            }
+          } else {
+            console.log(`⚠️ Nenhum número encontrado com CPF "${cpfFormatado}" após filtrar em memória`)
           }
-        } else {
-          const errorText = await numerosResponse.text()
-          console.log(`Erro ao buscar números com CPF "${cpfVariant}": ${numerosResponse.status} - ${errorText}`)
         }
-      } catch (error) {
-        console.error(`Erro ao buscar números da sorte com CPF ${cpfVariant}:`, error)
+      } else {
+        const errorText = await numerosResponse.text()
+        console.log(`Erro ao buscar números: ${numerosResponse.status} - ${errorText}`)
       }
+    } catch (error) {
+      console.error(`Erro ao buscar números da sorte:`, error)
     }
     
     // Se encontrou participante mas não encontrou números pelo CPF, tentar buscar pelo participante_id
