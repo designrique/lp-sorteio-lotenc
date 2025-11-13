@@ -166,23 +166,28 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
 
       const result = await response.json()
 
-      if (result.success && result.numeros_sorte && result.numeros_sorte.length > 0) {
-        setLuckyNumberFound(result.numeros_sorte.join(', '))
-        toast({
-          variant: 'success',
-          title: 'Números encontrados!',
-          description: `${result.total_numeros || result.numeros_sorte.length} número(s) da sorte encontrado(s)`,
-        })
-      } else if (result.success && result.numero_sorte) {
-        // Compatibilidade com formato antigo
-        setLuckyNumberFound(result.numero_sorte)
-        toast({
-          variant: 'success',
-          title: 'Número encontrado!',
-          description: `Seu número da sorte é: ${result.numero_sorte}`,
-        })
+      if (result.success) {
+        if (result.numeros_sorte && result.numeros_sorte.length > 0) {
+          setLuckyNumberFound(result.numeros_sorte.join(', '))
+          toast({
+            variant: 'success',
+            title: 'Números encontrados!',
+            description: `${result.total_numeros || result.numeros_sorte.length} número(s) da sorte encontrado(s)`,
+          })
+        } else if (result.numero_sorte) {
+          // Compatibilidade com formato antigo
+          setLuckyNumberFound(result.numero_sorte)
+          toast({
+            variant: 'success',
+            title: 'Número encontrado!',
+            description: `Seu número da sorte é: ${result.numero_sorte}`,
+          })
+        } else {
+          // Participante encontrado mas sem números
+          throw new Error(result.message || 'Participante encontrado, mas nenhum número da sorte cadastrado.')
+        }
       } else {
-        throw new Error('Número da sorte não encontrado.')
+        throw new Error(result.message || 'Número da sorte não encontrado.')
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao consultar número da sorte.'

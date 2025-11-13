@@ -133,9 +133,15 @@ exports.handler = async (event, context) => {
     // Buscar todos os números da sorte do participante
     let numerosSorte = []
     
-    if (participante) {
-      // Buscar números usando CPF
-      const numerosCheckUrl = `${numerosUrl}?where=(cpf,eq,"${cpfFormatado}")&sort=bolao_sequencia`
+    // Buscar números usando CPF (mesmo se não encontrou participante, pode ter números)
+    const searchVariantsNumeros = [
+      cpfFormatado,
+      cpfFormatado.replace(/^0+/, ''), // Sem zeros à esquerda
+    ]
+    
+    for (const cpfVariant of searchVariantsNumeros) {
+      const numerosCheckUrl = `${numerosUrl}?where=(cpf,eq,"${cpfVariant}")&sort=bolao_sequencia`
+      console.log(`Buscando números com CPF: "${cpfVariant}"`)
       
       try {
         const numerosResponse = await fetch(numerosCheckUrl, {
@@ -148,26 +154,68 @@ exports.handler = async (event, context) => {
 
         if (numerosResponse.ok) {
           const numerosData = await numerosResponse.json()
+          console.log('Resposta da busca de números:', {
+            status: numerosResponse.status,
+            totalEncontrado: numerosData.list?.length || 0,
+          })
+          
           if (numerosData.list && numerosData.list.length > 0) {
             numerosSorte = numerosData.list.map(record => {
               const numeroFormatado = record.numero_formatado || 
-                                     record.numero_sorte?.toString().padStart(4, '0') ||
+                                     (record.numero_sorte ? record.numero_sorte.toString().padStart(4, '0') : null) ||
                                      String(record.numero_sorte || '').padStart(4, '0')
               return {
                 numero: numeroFormatado,
-                sequencia: record.bolao_sequencia || record.bolao_sequencia || null,
+                sequencia: record.bolao_sequencia || null,
                 origem: record.origem || 'landing_page',
                 status: record.status || 'ativo',
                 criado_em: record.criado_em || null,
+                participante_id: record.participante_id || record.participante_Id || null,
               }
             })
             console.log(`${numerosSorte.length} número(s) da sorte encontrado(s)`)
+            break // Se encontrou, não precisa tentar outras variantes
           }
+        } else {
+          const errorText = await numerosResponse.text()
+          console.log(`Erro ao buscar números com CPF "${cpfVariant}": ${numerosResponse.status} - ${errorText}`)
         }
       } catch (error) {
-        console.error('Erro ao buscar números da sorte:', error)
+        console.error(`Erro ao buscar números da sorte com CPF ${cpfVariant}:`, error)
       }
     }
+    
+    // Se encontrou números mas não encontrou participante, buscar participante novamente usando os números
+    if (numerosSorte.length > 0 && !participante) {
+      console.log('Números encontrados mas participante não encontrado. Tentando buscar participante novamente...')
+      // Tentar buscar pelo participante_id do primeiro número
+      if (numerosSorte[0].participante_id) {
+        try {
+          const participanteUrl = `${participantesUrl}/${numerosSorte[0].participante_id}`
+          const participanteResponse = await fetch(participanteUrl, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'xc-token': nocodbToken,
+            },
+          })
+          
+          if (participanteResponse.ok) {
+            participante = await participanteResponse.json()
+            console.log('Participante encontrado via participante_id')
+          }
+        } catch (error) {
+          console.error('Erro ao buscar participante via ID:', error)
+        }
+      }
+    }
+
+    // Log para debug
+    console.log('Resultado da busca:', {
+      participanteEncontrado: !!participante,
+      numerosEncontrados: numerosSorte.length,
+      cpfFormatado: cpfFormatado,
+    })
 
     // Se encontrou participante ou números, retornar sucesso
     if (participante || numerosSorte.length > 0) {
@@ -177,9 +225,9 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({
           success: true,
           participante: participante ? {
-            nome: participante.usuario || participante.usuario,
-            email: participante.email,
-            whatsapp: participante.whatsapp,
+            nome: participante.usuario || participante.Usuario || '',
+            email: participante.email || '',
+            whatsapp: participante.whatsapp || '',
             total_boloes: participante.total_boloes || participante.total_boloes || 0,
           } : null,
           numeros_sorte: numerosSorte.map(n => n.numero),
@@ -191,10 +239,12 @@ exports.handler = async (event, context) => {
         }),
       }
     } else {
+      console.log('CPF não encontrado:', cpfFormatado)
       return {
         statusCode: 404,
         headers,
         body: JSON.stringify({
+          success: false,
           error: 'CPF não encontrado',
           message: 'Não encontramos nenhum cadastro com este CPF. Por favor, realize seu cadastro primeiro.',
         }),
