@@ -340,7 +340,7 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
                           <SelectContent>
                             {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
                               <SelectItem key={num} value={num.toString()}>
-                                {num} bolão{num > 1 ? 'ões' : ''}
+                                {num} {num === 1 ? 'bolão' : 'bolões'}
                               </SelectItem>
                             ))}
                             {Array.from({ length: 9 }, (_, i) => (i + 1) * 10).map((num) => (
