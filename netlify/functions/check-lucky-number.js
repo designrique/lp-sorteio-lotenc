@@ -265,6 +265,60 @@ exports.handler = async (event, context) => {
       }
     }
     
+    // Se encontrou participante mas não encontrou números pelo CPF, tentar buscar pelo participante_id
+    if (participante && numerosSorte.length === 0) {
+      const participanteId = participante.id || participante.Id || participante.ID
+      console.log(`Participante encontrado mas nenhum número pelo CPF. Tentando buscar pelo participante_id: ${participanteId}`)
+      
+      if (participanteId) {
+        try {
+          const numerosPorIdUrl = `${numerosUrl}?where=(participante_id,eq,${participanteId})&sort=bolao_sequencia`
+          console.log(`Buscando números pelo participante_id: ${numerosPorIdUrl}`)
+          
+          const numerosPorIdResponse = await fetch(numerosPorIdUrl, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'xc-token': nocodbToken,
+            },
+          })
+          
+          if (numerosPorIdResponse.ok) {
+            const numerosPorIdData = await numerosPorIdResponse.json()
+            console.log(`Busca por participante_id retornou: ${numerosPorIdData.list?.length || 0} registro(s)`)
+            
+            if (numerosPorIdData.list && numerosPorIdData.list.length > 0) {
+              console.log('Exemplos de registros encontrados por participante_id:')
+              numerosPorIdData.list.slice(0, 3).forEach((num, idx) => {
+                console.log(`  ${idx + 1}. CPF: "${num.cpf}", numero_formatado: "${num.numero_formatado}"`)
+              })
+              
+              numerosSorte = numerosPorIdData.list.map(record => {
+                const numeroFormatado = record.numero_formatado || 
+                                       (record.numero_sorte ? record.numero_sorte.toString().padStart(4, '0') : null) ||
+                                       String(record.numero_sorte || '').padStart(4, '0')
+                return {
+                  numero: numeroFormatado,
+                  sequencia: record.bolao_sequencia || null,
+                  origem: record.origem || 'landing_page',
+                  status: record.status || 'ativo',
+                  criado_em: record.criado_em || null,
+                  participante_id: record.participante_id || record.participante_Id || null,
+                }
+              }).filter(n => n.numero) // Filtrar apenas números válidos
+              
+              console.log(`✅ ${numerosSorte.length} número(s) encontrado(s) via participante_id`)
+            }
+          } else {
+            const errorText = await numerosPorIdResponse.text()
+            console.log(`Erro ao buscar por participante_id: ${numerosPorIdResponse.status} - ${errorText}`)
+          }
+        } catch (error) {
+          console.error('Erro ao buscar números por participante_id:', error)
+        }
+      }
+    }
+    
     // Ordenar números por sequência
     numerosSorte.sort((a, b) => (a.sequencia || 0) - (b.sequencia || 0))
     
