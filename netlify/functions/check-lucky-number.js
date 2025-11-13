@@ -167,7 +167,8 @@ exports.handler = async (event, context) => {
     ]
     
     for (const cpfVariant of searchVariantsNumeros) {
-      const numerosCheckUrl = `${numerosUrl}?where=(cpf,eq,"${cpfVariant}")&sort=bolao_sequencia`
+      // Adicionar limit para buscar todos os registros
+      const numerosCheckUrl = `${numerosUrl}?where=(cpf,eq,"${cpfVariant}")&sort=bolao_sequencia&limit=1000`
       console.log(`Buscando números com CPF: "${cpfVariant}"`)
       
       try {
@@ -272,7 +273,8 @@ exports.handler = async (event, context) => {
       
       if (participanteId) {
         try {
-          const numerosPorIdUrl = `${numerosUrl}?where=(participante_id,eq,${participanteId})&sort=bolao_sequencia`
+          // Buscar TODOS os números do participante (sem limite)
+          const numerosPorIdUrl = `${numerosUrl}?where=(participante_id,eq,${participanteId})&sort=bolao_sequencia&limit=1000`
           console.log(`Buscando números pelo participante_id: ${numerosPorIdUrl}`)
           
           const numerosPorIdResponse = await fetch(numerosPorIdUrl, {
@@ -288,9 +290,9 @@ exports.handler = async (event, context) => {
             console.log(`Busca por participante_id retornou: ${numerosPorIdData.list?.length || 0} registro(s)`)
             
             if (numerosPorIdData.list && numerosPorIdData.list.length > 0) {
-              console.log('Exemplos de registros encontrados por participante_id:')
-              numerosPorIdData.list.slice(0, 3).forEach((num, idx) => {
-                console.log(`  ${idx + 1}. CPF: "${num.cpf}", numero_formatado: "${num.numero_formatado}"`)
+              console.log('Todos os registros encontrados por participante_id:')
+              numerosPorIdData.list.forEach((num, idx) => {
+                console.log(`  ${idx + 1}. CPF: "${num.cpf}", numero_formatado: "${num.numero_formatado}", bolao_sequencia: ${num.bolao_sequencia}`)
               })
               
               numerosSorte = numerosPorIdData.list.map(record => {
@@ -308,6 +310,8 @@ exports.handler = async (event, context) => {
               }).filter(n => n.numero) // Filtrar apenas números válidos
               
               console.log(`✅ ${numerosSorte.length} número(s) encontrado(s) via participante_id`)
+            } else {
+              console.log('⚠️ Nenhum registro encontrado por participante_id')
             }
           } else {
             const errorText = await numerosPorIdResponse.text()
