@@ -35,13 +35,6 @@
   status = 200
   force = true
 
-# Exceção para funções Netlify - não redirecionar
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-  force = true
-
 # Redirect catch-all para SPA - deve ser o último
 [[redirects]]
   from = "/*"
