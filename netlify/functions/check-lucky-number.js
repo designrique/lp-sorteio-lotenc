@@ -151,8 +151,23 @@ exports.handler = async (event, context) => {
         if (todosNumerosData.list && todosNumerosData.list.length > 0) {
           console.log('Exemplos de CPFs no banco:')
           todosNumerosData.list.slice(0, 5).forEach((num, idx) => {
-            console.log(`  ${idx + 1}. CPF: "${num.cpf}" (tipo: ${typeof num.cpf}), numero_formatado: "${num.numero_formatado}"`)
+            const participanteId = num.participante_id || num.participante_Id || num.participante_ID || 'NULL'
+            console.log(`  ${idx + 1}. CPF: "${num.cpf}" (tipo: ${typeof num.cpf}), numero_formatado: "${num.numero_formatado}", participante_id: ${participanteId}`)
           })
+          
+          // Filtrar números do CPF consultado para ver quantos têm o mesmo participante_id
+          const numerosDoCpf = todosNumerosData.list.filter(num => {
+            const numCpf = String(num.cpf || '').trim().replace(/\D/g, '').padStart(11, '0')
+            return numCpf === cpfFormatado || numCpf === cpfFormatado.replace(/^0+/, '')
+          })
+          console.log(`Números encontrados com CPF "${cpfFormatado}": ${numerosDoCpf.length}`)
+          if (numerosDoCpf.length > 0) {
+            console.log('participante_id dos números deste CPF:')
+            numerosDoCpf.forEach((num, idx) => {
+              const participanteId = num.participante_id || num.participante_Id || num.participante_ID || 'NULL'
+              console.log(`  ${idx + 1}. numero_formatado: "${num.numero_formatado}", participante_id: ${participanteId}`)
+            })
+          }
         }
       }
     } catch (error) {
@@ -267,10 +282,14 @@ exports.handler = async (event, context) => {
     }
     
     // Se encontrou participante mas não encontrou números pelo CPF, tentar buscar pelo participante_id
+    // E também buscar diretamente usando o CPF do participante encontrado
     if (participante && numerosSorte.length === 0) {
       const participanteId = participante.id || participante.Id || participante.ID
-      console.log(`Participante encontrado mas nenhum número pelo CPF. Tentando buscar pelo participante_id: ${participanteId}`)
+      const participanteCpf = String(participante.cpf || '').trim().replace(/\D/g, '').padStart(11, '0')
       
+      console.log(`Participante encontrado mas nenhum número pelo CPF. Tentando buscar pelo participante_id: ${participanteId} e CPF: "${participanteCpf}"`)
+      
+      // Tentar buscar por participante_id primeiro
       if (participanteId) {
         try {
           // Buscar TODOS os números do participante (sem limite)
@@ -292,7 +311,7 @@ exports.handler = async (event, context) => {
             if (numerosPorIdData.list && numerosPorIdData.list.length > 0) {
               console.log('Todos os registros encontrados por participante_id:')
               numerosPorIdData.list.forEach((num, idx) => {
-                console.log(`  ${idx + 1}. CPF: "${num.cpf}", numero_formatado: "${num.numero_formatado}", bolao_sequencia: ${num.bolao_sequencia}`)
+                console.log(`  ${idx + 1}. CPF: "${num.cpf}", numero_formatado: "${num.numero_formatado}", bolao_sequencia: ${num.bolao_sequencia}, participante_id: ${num.participante_id || num.participante_Id || 'NULL'}`)
               })
               
               numerosSorte = numerosPorIdData.list.map(record => {
@@ -319,6 +338,51 @@ exports.handler = async (event, context) => {
           }
         } catch (error) {
           console.error('Erro ao buscar números por participante_id:', error)
+        }
+      }
+      
+      // Se ainda não encontrou, tentar buscar usando o CPF do participante encontrado
+      if (numerosSorte.length === 0 && participanteCpf) {
+        console.log(`Tentando buscar números usando CPF do participante encontrado: "${participanteCpf}"`)
+        try {
+          const numerosPorCpfParticipanteUrl = `${numerosUrl}?where=(cpf,eq,"${participanteCpf}")&sort=bolao_sequencia&limit=1000`
+          const numerosPorCpfResponse = await fetch(numerosPorCpfParticipanteUrl, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'xc-token': nocodbToken,
+            },
+          })
+          
+          if (numerosPorCpfResponse.ok) {
+            const numerosPorCpfData = await numerosPorCpfResponse.json()
+            console.log(`Busca por CPF do participante retornou: ${numerosPorCpfData.list?.length || 0} registro(s)`)
+            
+            if (numerosPorCpfData.list && numerosPorCpfData.list.length > 0) {
+              console.log('Todos os registros encontrados por CPF do participante:')
+              numerosPorCpfData.list.forEach((num, idx) => {
+                console.log(`  ${idx + 1}. CPF: "${num.cpf}", numero_formatado: "${num.numero_formatado}", bolao_sequencia: ${num.bolao_sequencia}, participante_id: ${num.participante_id || num.participante_Id || 'NULL'}`)
+              })
+              
+              numerosSorte = numerosPorCpfData.list.map(record => {
+                const numeroFormatado = record.numero_formatado || 
+                                       (record.numero_sorte ? record.numero_sorte.toString().padStart(4, '0') : null) ||
+                                       String(record.numero_sorte || '').padStart(4, '0')
+                return {
+                  numero: numeroFormatado,
+                  sequencia: record.bolao_sequencia || null,
+                  origem: record.origem || 'landing_page',
+                  status: record.status || 'ativo',
+                  criado_em: record.criado_em || null,
+                  participante_id: record.participante_id || record.participante_Id || null,
+                }
+              }).filter(n => n.numero) // Filtrar apenas números válidos
+              
+              console.log(`✅ ${numerosSorte.length} número(s) encontrado(s) via CPF do participante`)
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao buscar números por CPF do participante:', error)
         }
       }
     }
