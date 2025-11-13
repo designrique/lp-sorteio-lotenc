@@ -1,0 +1,556 @@
+projeto:
+  nome: "Loteria Encruzilhada - Landing Page de Sorteio"
+  descricao: "Landing page para captação de leads e geração de números da sorte para sorteio da Mega da Virada"
+  versao: "0.0.2"
+  tipo: "SPA (Single Page Application)"
+
+stack_tecnologica:
+  frontend:
+    framework: "React 19"
+    linguagem: "TypeScript"
+    build_tool: "Vite"
+    roteamento: "React Router DOM v6"
+    formularios: "React Hook Form + Zod"
+    ui_components: "Shadcn UI (baseado em Radix UI)"
+    estilizacao: "Tailwind CSS"
+    icones: "Lucide React + Font Awesome"
+  backend:
+    plataforma: "Netlify Functions (Serverless)"
+    linguagem: "JavaScript (Node.js)"
+  banco_dados:
+    tipo: "NocoDB"
+    integracao: "REST API"
+  autenticacao: "Não requerida"
+  deploy:
+    plataforma: "Netlify"
+    build_command: "pnpm run build"
+    publish_directory: "dist"
+    functions_directory: "netlify/functions"
+
+estrutura_projeto:
+  diretorios_principais:
+    - "src/"
+    - "src/components/"
+    - "src/pages/"
+    - "src/hooks/"
+    - "src/lib/"
+    - "netlify/functions/"
+    - "public/"
+  arquivos_principais:
+    frontend:
+      - "src/App.tsx - Roteamento principal"
+      - "src/pages/Index.tsx - Página principal com hero e seções"
+      - "src/components/SubscriptionForm.tsx - Formulário de cadastro e consulta"
+      - "src/components/ResultSection.tsx - Exibição do número da sorte"
+      - "src/components/Layout.tsx - Layout wrapper"
+    backend:
+      - "netlify/functions/add-lead.js - Cadastro de leads e geração de número"
+      - "netlify/functions/check-lucky-number.js - Consulta de número por CPF"
+      - "netlify/functions/og-image.js - Geração de imagem OG"
+    configuracao:
+      - "netlify.toml - Configuração de deploy e redirects"
+      - "package.json - Dependências e scripts"
+      - "tailwind.config.ts - Configuração do Tailwind"
+
+logica_sorteio:
+  descricao: "Sistema de geração de múltiplos números da sorte únicos por participante - 1 bolão = 1 número adicional"
+  versao: "2.0.0"
+  mudanca_principal: "De '1 CPF = 1 número' para '1 bolão = 1 número adicional'"
+  principio_core: "CPF permanece como identificador único do participante, mas agora pode ter múltiplos números da sorte"
+  
+  geracao_numero:
+    metodo: "Aleatório com Math.random() - múltiplos números por transação"
+    faixa: "1 a 10000 (inclusive)"
+    codigo: "gerarNumerosUnicos(quantidade, cpf, numerosExistentes)"
+    formato_exibicao: "4 dígitos com padding à esquerda (ex: 0001, 0123, 9999)"
+    codigo_formatacao: "numero.toString().padStart(4, '0')"
+    validacao_unicidade:
+      - "Verifica números já gerados na mesma transação"
+      - "Verifica números existentes do participante no banco"
+      - "Garante que não há duplicatas"
+    quantidade_maxima: "100 bolões por transação"
+  
+  validacao_unicidade:
+    criterio: "CPF único por participante, múltiplos números permitidos"
+    verificacao: "Consulta no NocoDB antes de gerar novos números"
+    tratamento_duplicatas:
+      - "Verifica se CPF já existe no banco"
+      - "Se existir, atualiza participante e adiciona novos números"
+      - "Se não existir, cria novo participante com números"
+      - "Busca números existentes do participante para evitar duplicatas"
+  
+  persistencia:
+    banco_dados: "NocoDB"
+    arquitetura: "Duas tabelas relacionadas (modelo escalável)"
+    tabela_1_participantes:
+      nome: "participantes"
+      descricao: "Dados mestres dos participantes"
+      campos_armazenados:
+        - "id: ID automático (PK)"
+        - "usuario: Nome completo"
+        - "whatsapp: Número do WhatsApp"
+        - "email: Email do participante"
+        - "cpf: CPF normalizado (11 dígitos, string, UNIQUE)"
+        - "total_boloes: Contador total de bolões comprados"
+        - "criado_em: Data do primeiro cadastro"
+        - "atualizado_em: Data da última atualização"
+      indices:
+        - "cpf (UNIQUE)"
+        - "email (INDEX)"
+        - "criado_em (INDEX)"
+    tabela_2_numeros_sorte:
+      nome: "numeros_sorte"
+      descricao: "Registro individual de cada número da sorte gerado"
+      campos_armazenados:
+        - "id: ID automático (PK)"
+        - "participante_id: FK para participantes"
+        - "cpf: CPF do participante (denormalizado para performance)"
+        - "numero_sorte: Número gerado (1-10000)"
+        - "numero_formatado: Número formatado (4 dígitos)"
+        - "bolao_sequencia: Sequência do bolão para este participante (1º, 2º, 3º...)"
+        - "origem: Canal de origem (landing_page, whatsapp, loja_fisica, evento, outro)"
+        - "status: Status do número (ativo, sorteado, premiado, cancelado)"
+        - "criado_em: Data e hora da geração"
+        - "sorteado_em: Data do sorteio (se realizado)"
+        - "observacoes: Campo livre para anotações"
+      indices:
+        - "cpf (INDEX)"
+        - "participante_id (INDEX)"
+        - "numero_sorte (INDEX)"
+        - "status (INDEX)"
+        - "origem (INDEX)"
+      constraints:
+        - "UNIQUE(participante_id, numero_sorte) - Impede duplicação de número para mesmo participante"
+  
+  consulta_numero:
+    endpoint: "/api/check-lucky-number"
+    metodo: "POST"
+    parametro: "cpf (obrigatório)"
+    resposta_sucesso:
+      status: 200
+      body:
+        success: true
+        participante:
+          nome: "Nome do participante"
+          email: "Email"
+          whatsapp: "WhatsApp"
+          total_boloes: "Total de bolões comprados"
+        numeros_sorte: "Array de todos os números formatados"
+        numeros_detalhados: "Array com detalhes de cada número (sequência, origem, status, etc)"
+        total_numeros: "Quantidade total de números"
+        message: "X número(s) da sorte encontrado(s)"
+    resposta_erro:
+      status_404:
+        error: "CPF não encontrado"
+        message: "Não encontramos nenhum cadastro com este CPF"
+      status_400:
+        error: "CPF é obrigatório"
+      status_500:
+        error: "Erro interno do servidor"
+  
+  normalizacao_cpf:
+    processo:
+      - "Remove máscara (pontos e traços)"
+      - "Mantém apenas números"
+      - "Adiciona zeros à esquerda até 11 dígitos"
+      - "Salva como string para preservar zeros"
+    compatibilidade:
+      - "Busca com zeros (ex: '01234567890')"
+      - "Busca sem zeros (ex: '1234567890')"
+      - "Busca como número convertido"
+      - "Busca ampla com filtro manual (fallback)"
+
+fluxo_funcionamento:
+  cadastro_novo_participante:
+    passo_1:
+      acao: "Usuário preenche formulário"
+      campos: ["Nome", "WhatsApp", "Email", "CPF", "Quantidade de Bolões"]
+      validacao_frontend: "Zod schema validation (quantidade entre 1-100)"
+    passo_2:
+      acao: "Frontend envia POST para /api/add-lead"
+      payload:
+        name: "Nome completo"
+        whatsapp: "Número do WhatsApp"
+        email: "Email válido"
+        cpf: "CPF com máscara"
+        quantidade_boloes: "Número entre 1 e 100 (default: 1)"
+    passo_3:
+      acao: "Netlify Function processa requisição"
+      validacoes:
+        - "Verifica dados obrigatórios"
+        - "Normaliza CPF (remove máscara, adiciona zeros)"
+        - "Valida quantidade_boloes (1-100)"
+        - "Busca participante existente por CPF"
+    passo_4:
+      acao: "Criar ou atualizar participante"
+      condicao_1: "CPF não existe"
+        operacoes:
+          - "Cria novo registro em participantes"
+          - "Define total_boloes = quantidade_boloes"
+          - "Marca como primeira compra"
+      condicao_2: "CPF já existe"
+        operacoes:
+          - "Atualiza total_boloes (soma quantidade_boloes)"
+          - "Atualiza atualizado_em"
+          - "Marca como compra adicional"
+    passo_5:
+      acao: "Buscar números existentes do participante"
+      query: "SELECT numero_sorte FROM numeros_sorte WHERE cpf = ?"
+      objetivo: "Evitar gerar números duplicados"
+    passo_6:
+      acao: "Geração de múltiplos números únicos"
+      funcao: "gerarNumerosUnicos(quantidade, cpf, numerosExistentes)"
+      processo:
+        - "Gera números aleatórios (1-10000)"
+        - "Verifica se não está na lista de existentes"
+        - "Verifica se não foi gerado na mesma transação"
+        - "Repete até gerar quantidade solicitada"
+    passo_7:
+      acao: "Salvamento dos números no NocoDB"
+      operacoes:
+        - "Para cada número gerado, cria registro em numeros_sorte"
+        - "Define bolao_sequencia (sequencial por participante)"
+        - "Define origem = 'landing_page'"
+        - "Define status = 'ativo'"
+        - "Salva numero_formatado (4 dígitos)"
+    passo_8:
+      acao: "Integração com N8N (opcional)"
+      webhook: "N8N_WEBHOOK_URL"
+      payload:
+        nome: "Nome"
+        whatsapp: "WhatsApp"
+        email: "Email"
+        numeros_sorte: "Array de números formatados"
+        quantidade_boloes: "Quantidade desta transação"
+        total_boloes: "Total acumulado"
+        eh_primeira_compra: "Boolean"
+      timeout: "10 segundos"
+      comportamento: "Não bloqueia cadastro se falhar"
+    passo_9:
+      acao: "Resposta ao frontend"
+      status: 200
+      body:
+        success: true
+        numeros_sorte: "Array de todos os números do participante"
+        novos_numeros: "Array dos números recém-gerados"
+        total_boloes: "Total acumulado de bolões"
+        eh_primeira_compra: "Boolean"
+        message: "Mensagem personalizada (primeira compra ou adicional)"
+    passo_10:
+      acao: "Frontend exibe resultado"
+      componente: "ResultSection"
+      exibicao:
+        - "Se múltiplos números: Grid responsivo com todos os números"
+        - "Se um número: Exibição grande centralizada"
+        - "Mostra total de bolões e multiplicador de chances"
+      acao_usuario: "Scroll automático para seção de resultado"
+  
+  consulta_numero_existente:
+    passo_1:
+      acao: "Usuário preenche CPF no formulário de consulta"
+      validacao: "Formato XXX.XXX.XXX-XX"
+    passo_2:
+      acao: "Frontend envia POST para /api/check-lucky-number"
+      payload:
+        cpf: "CPF com máscara"
+    passo_3:
+      acao: "Netlify Function normaliza CPF"
+      processo: "Remove máscara, adiciona zeros à esquerda"
+    passo_4:
+      acao: "Busca no NocoDB"
+      estrategias:
+        - "Busca com CPF formatado (com zeros)"
+        - "Busca sem zeros (compatibilidade)"
+        - "Busca como número"
+        - "Busca ampla com filtro manual (fallback)"
+    passo_5:
+      acao: "Buscar todos os números do participante"
+      query: "SELECT * FROM numeros_sorte WHERE cpf = ? ORDER BY bolao_sequencia"
+      resultado: "Array com todos os números e detalhes"
+    passo_6:
+      acao: "Resposta ao frontend"
+      sucesso_200:
+        success: true
+        participante: "Dados do participante (nome, email, whatsapp, total_boloes)"
+        numeros_sorte: "Array de números formatados"
+        numeros_detalhados: "Array com detalhes completos"
+        total_numeros: "Quantidade total"
+        message: "X número(s) da sorte encontrado(s)"
+      erro_404:
+        error: "CPF não encontrado"
+        message: "Não encontramos nenhum cadastro com este CPF"
+    passo_7:
+      acao: "Frontend exibe números encontrados"
+      componente: "SubscriptionForm (seção de consulta)"
+      visual:
+        - "Se múltiplos: Grid com todos os números"
+        - "Se um: Card verde com número destacado"
+        - "Mostra quantidade total encontrada"
+
+integracao_nocodb:
+  configuracao:
+    variaveis_ambiente:
+      NOCODB_BASE_URL: "URL base da instância NocoDB"
+      NOCODB_TOKEN: "Token de autenticação"
+      NOCODB_PROJECT: "ID do projeto (default: 'default')"
+      # NOCODB_TABLE não é mais usado (substituído por duas tabelas)
+  
+  estrutura_tabelas:
+    tabela_participantes:
+      nome: "participantes"
+      api_endpoints:
+        criar:
+          metodo: "POST"
+          url: "${NOCODB_BASE_URL}/api/v1/db/data/noco/${NOCODB_PROJECT}/participantes"
+        atualizar:
+          metodo: "PATCH"
+          url: "${NOCODB_BASE_URL}/api/v1/db/data/noco/${NOCODB_PROJECT}/participantes/${id}"
+        consultar:
+          metodo: "GET"
+          url: "${NOCODB_BASE_URL}/api/v1/db/data/noco/${NOCODB_PROJECT}/participantes?where=(cpf,eq,\"${cpf}\")"
+    tabela_numeros_sorte:
+      nome: "numeros_sorte"
+      api_endpoints:
+        criar:
+          metodo: "POST"
+          url: "${NOCODB_BASE_URL}/api/v1/db/data/noco/${NOCODB_PROJECT}/numeros_sorte"
+        consultar:
+          metodo: "GET"
+          url: "${NOCODB_BASE_URL}/api/v1/db/data/noco/${NOCODB_PROJECT}/numeros_sorte?where=(cpf,eq,\"${cpf}\")&sort=bolao_sequencia"
+        consultar_sequencia:
+          metodo: "GET"
+          url: "${NOCODB_BASE_URL}/api/v1/db/data/noco/${NOCODB_PROJECT}/numeros_sorte?where=(cpf,eq,\"${cpf}\")&sort=-bolao_sequencia&limit=1"
+  
+  headers_padrao:
+    Content-Type: "application/json"
+    xc-token: "${NOCODB_TOKEN}"
+
+integracao_n8n:
+  proposito: "Envio automático de mensagens via WhatsApp"
+  configuracao:
+    variavel_ambiente: "N8N_WEBHOOK_URL"
+    metodo: "POST"
+    timeout: "10 segundos"
+    comportamento_erro: "Não bloqueia cadastro se falhar"
+  
+  payload:
+    nome: "Nome do participante"
+    whatsapp: "Número do WhatsApp"
+    email: "Email do participante"
+    numeros_sorte: "Array de números formatados (4 dígitos)"
+    quantidade_boloes: "Quantidade de bolões desta transação"
+    total_boloes: "Total acumulado de bolões"
+    eh_primeira_compra: "Boolean indicando se é primeira compra"
+
+interface_usuario:
+  secoes:
+    header:
+      cor_fundo: "#001ea7 (azul)"
+      conteudo: "Logo da Loteria Encruzilhada"
+    
+    hero:
+      cor_fundo: "#ebce10 (amarelo)"
+      layout: "Split (2 colunas em desktop)"
+      lado_esquerdo:
+        - "Imagem animada com 3 camadas"
+        - "icons_premios2.png (fundo com explosão)"
+        - "cindy-photo.png (personagem principal)"
+        - "icons-premios.png (prêmios flutuantes)"
+        - "Moeda flutuante animada"
+      lado_direito:
+        - "Título: 'O que você faria se acordasse milionário em 2026?'"
+        - "Subtítulo sobre Mega da Virada"
+        - "Lista de prêmios (R$ 850 milhões + Moto elétrica)"
+        - "Lista de prêmios imediatos (Airfryer, Sanduicheira, Liquidificador)"
+        - "Botão CTA: 'QUERO MEU NÚMERO DA SORTE AGORA!'"
+        - "Features (Zero Poluição, Zero Combustível, Zero Burocracia)"
+    
+    info:
+      cor_fundo: "#001ea7 (azul)"
+      titulo: "Participe do momento da sorte sem custo nenhum"
+      conteudo: "4 passos explicativos do processo"
+      animacao: "Fade in on scroll"
+    
+    formulario:
+      tipo: "Card branco com sombra"
+      formulario_cadastro:
+        titulo: "Garanta Seu Número da Sorte!"
+        campos:
+          - "Nome Completo (obrigatório)"
+          - "WhatsApp (obrigatório, formato validado)"
+          - "Email (obrigatório, formato validado)"
+          - "CPF (obrigatório, formato XXX.XXX.XXX-XX)"
+          - "Quantidade de Bolões (obrigatório, select 1-100, default: 1)"
+        botao: "Gerar Meu Número da Sorte"
+        estados: ["Normal", "Loading", "Sucesso", "Erro"]
+        mensagem_ajuda: "Cada bolão gera um número da sorte único. Quanto mais bolões, maiores suas chances!"
+      formulario_consulta:
+        titulo: "CONSULTAR MEU NÚMERO DA SORTE"
+        campo: "CPF (obrigatório)"
+        botao: "Consultar Número da Sorte"
+        exibicao_resultado: 
+          - "Se múltiplos números: Grid responsivo com todos os números"
+          - "Se um número: Card verde com número destacado"
+          - "Mostra quantidade total encontrada"
+        comportamento: "Ocultado temporariamente após cadastro (30 segundos)"
+    
+    resultado:
+      condicao: "Aparece após cadastro bem-sucedido"
+      componente: "ResultSection"
+      conteudo:
+        - "Título dinâmico: 'Parabéns, Seu Cadastro Foi Realizado!' (primeira compra) ou 'Compra Realizada com Sucesso!' (compras adicionais)"
+        - "Se múltiplos números: Grid responsivo (2-4 colunas) com todos os números"
+        - "Se um número: Exibição grande centralizada"
+        - "Card informativo com total de bolões e multiplicador de chances (se múltiplos)"
+        - "Mensagem sobre WhatsApp e email"
+      scroll: "Automático após sucesso"
+    
+    footer:
+      cor_fundo: "#001ea7 (azul)"
+      conteudo:
+        - "Logo"
+        - "Mensagem sobre transparência e credibilidade"
+        - "Ícone de segurança"
+    
+    parceria:
+      cor_fundo: "#ebce10 (amarelo)"
+      conteudo: "Logo Mega Elétron + informações de contato"
+
+validacoes:
+  frontend:
+    nome:
+      tipo: "string"
+      obrigatorio: true
+      min_length: 1
+    whatsapp:
+      tipo: "string"
+      obrigatorio: true
+      regex: "/^([+]?[\\s0-9]+)?(\\d{3}|[(]?[0-9]+[)])?([-]?[\\s]?[0-9])+$/"
+      min_length: 10
+    email:
+      tipo: "string"
+      obrigatorio: true
+      formato: "email válido"
+    cpf:
+      tipo: "string"
+      obrigatorio: true
+      regex: "/^[\\d]{3}\\.?[\\d]{3}\\.?[\\d]{3}-?[\\d]{2}$/"
+      formato_exibicao: "XXX.XXX.XXX-XX"
+  
+  backend:
+    dados_obrigatorios:
+      - "name"
+      - "whatsapp"
+      - "email"
+      - "cpf"
+    cpf_duplicado:
+      status: 409
+      mensagem: "Este CPF já está cadastrado em nosso sistema"
+
+deploy:
+  plataforma: "Netlify"
+  build:
+    comando: "pnpm run build"
+    diretorio_publicacao: "dist"
+    diretorio_funcoes: "netlify/functions"
+    node_version: "22.21.0"
+    pnpm_version: "10.19.0"
+  
+  redirects:
+    - from: "/api/og-image"
+      to: "/.netlify/functions/og-image"
+      status: 200
+    - from: "/api/add-lead"
+      to: "/.netlify/functions/add-lead"
+      status: 200
+    - from: "/api/check-lucky-number"
+      to: "/.netlify/functions/check-lucky-number"
+      status: 200
+    - from: "/*"
+      to: "/index.html"
+      status: 200
+  
+  variaveis_ambiente:
+    obrigatorias:
+      - "NOCODB_BASE_URL"
+      - "NOCODB_TOKEN"
+    opcionais:
+      - "NOCODB_PROJECT (default: 'default')"
+      - "NOCODB_TABLE (default: 'leads')"
+      - "N8N_WEBHOOK_URL"
+
+seguranca:
+  cors:
+    configuracao: "Permissivo para desenvolvimento (*)"
+    headers:
+      Access-Control-Allow-Origin: "*"
+      Access-Control-Allow-Headers: "Content-Type"
+      Access-Control-Allow-Methods: "POST, OPTIONS"
+  
+  validacao_dados:
+    frontend: "Zod schemas"
+    backend: "Validação de campos obrigatórios"
+  
+  tratamento_erros:
+    - "Try-catch em todas as funções"
+    - "Logs detalhados para debugging"
+    - "Mensagens de erro amigáveis ao usuário"
+    - "Não exposição de informações sensíveis"
+
+performance:
+  otimizacoes:
+    - "Build otimizado com Vite"
+    - "Code splitting automático"
+    - "Lazy loading de componentes"
+    - "Imagens otimizadas"
+    - "CSS purging com Tailwind"
+  
+  animacoes:
+    - "Fade in on scroll"
+    - "Bounce suave"
+    - "Pulse scale"
+    - "Float animation"
+    - "Transições suaves"
+
+responsividade:
+  breakpoints:
+    mobile: "< 640px"
+    tablet: "640px - 1024px"
+    desktop: "> 1024px"
+  
+  adaptacoes:
+    - "Layout em coluna única no mobile"
+    - "Grid responsivo (1-2-4 colunas)"
+    - "Tamanhos de fonte adaptativos"
+    - "Espaçamentos responsivos"
+    - "Imagens com tamanhos adaptativos"
+
+anotacoes_importantes:
+  lógica_sorteio:
+    - "Números são gerados aleatoriamente entre 1 e 10000"
+    - "Unicidade é garantida por participante (um participante não pode ter o mesmo número duas vezes)"
+    - "CPF é usado como identificador único do participante"
+    - "Um CPF pode ter múltiplos números (um por cada bolão comprado)"
+    - "Sistema permite compras adicionais do mesmo CPF (não retorna mais erro 409)"
+    - "Cada número é rastreado individualmente com sequência, origem e status"
+    - "Relacionamento One-to-Many: 1 participante : N números da sorte"
+    - "Arquitetura escalável suporta milhares de números por participante"
+    - "Auditoria completa: cada número tem timestamp, origem e sequência"
+  
+  normalizacao_cpf:
+    - "CPF é sempre normalizado antes de salvar/consultar"
+    - "Zeros à esquerda são preservados (ex: 01234567890)"
+    - "Múltiplas estratégias de busca garantem compatibilidade"
+    - "Fallback para busca ampla se queries específicas falharem"
+  
+  integracao_n8n:
+    - "Envio para N8N é assíncrono e não bloqueia cadastro"
+    - "Timeout de 10 segundos para evitar travamentos"
+    - "Erros no N8N são logados mas não impedem sucesso do cadastro"
+  
+  experiencia_usuario:
+    - "Formulário de consulta é ocultado temporariamente após cadastro"
+    - "Scroll automático para resultado após sucesso"
+    - "Feedback visual imediato (toasts, loading states)"
+    - "Validação em tempo real nos campos do formulário"
+

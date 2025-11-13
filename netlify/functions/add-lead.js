@@ -1,3 +1,103 @@
+/**
+ * Função para gerar números da sorte únicos
+ * @param {number} quantidade - Quantidade de números a gerar
+ * @param {string} cpf - CPF do participante (para logging)
+ * @param {number[]} numerosExistentes - Array de números já existentes para evitar duplicatas
+ * @returns {number[]} Array de números únicos gerados
+ */
+function gerarNumerosUnicos(quantidade, cpf, numerosExistentes = []) {
+  const numerosGerados = []
+  const maxTentativas = quantidade * 100 // Limite de tentativas para evitar loop infinito
+  let tentativas = 0
+
+  while (numerosGerados.length < quantidade && tentativas < maxTentativas) {
+    const numero = Math.floor(Math.random() * 10000) + 1
+    
+    // Verificar se o número já foi gerado nesta execução
+    if (!numerosGerados.includes(numero)) {
+      // Verificar se o número já existe no banco (para este CPF)
+      if (!numerosExistentes.includes(numero)) {
+        numerosGerados.push(numero)
+      }
+    }
+    
+    tentativas++
+  }
+
+  if (numerosGerados.length < quantidade) {
+    console.warn(`Aviso: Apenas ${numerosGerados.length} de ${quantidade} números únicos foram gerados para CPF ${cpf}`)
+  }
+
+  return numerosGerados
+}
+
+/**
+ * Buscar participante por CPF
+ */
+async function buscarParticipante(nocodbBaseUrl, nocodbToken, nocodbProject, cpfFormatado) {
+  const participantesUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/participantes`
+  
+  // Tentar múltiplas formas de busca
+  const searchVariants = [
+    cpfFormatado,
+    cpfFormatado.replace(/^0+/, ''), // Sem zeros à esquerda
+  ]
+
+  for (const cpfVariant of searchVariants) {
+    const checkUrl = `${participantesUrl}?where=(cpf,eq,"${cpfVariant}")`
+    
+    try {
+      const response = await fetch(checkUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'xc-token': nocodbToken,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.list && data.list.length > 0) {
+          return data.list[0]
+        }
+      }
+    } catch (error) {
+      console.error(`Erro ao buscar CPF ${cpfVariant}:`, error)
+    }
+  }
+
+  return null
+}
+
+/**
+ * Buscar números da sorte existentes de um participante
+ */
+async function buscarNumerosExistentes(nocodbBaseUrl, nocodbToken, nocodbProject, cpfFormatado) {
+  const numerosUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/numeros_sorte`
+  const checkUrl = `${numerosUrl}?where=(cpf,eq,"${cpfFormatado}")`
+  
+  try {
+    const response = await fetch(checkUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'xc-token': nocodbToken,
+      },
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data.list && data.list.length > 0) {
+        return data.list.map(record => record.numero_sorte || record.numero_formatado)
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao buscar números existentes:', error)
+  }
+
+  return []
+}
+
 exports.handler = async (event, context) => {
   // Configurar CORS
   const headers = {
@@ -29,9 +129,9 @@ exports.handler = async (event, context) => {
     
     // Parse do body
     const data = JSON.parse(event.body)
-    const { name, whatsapp, email, cpf } = data
+    const { name, whatsapp, email, cpf, quantidade_boloes } = data
 
-    console.log('Dados recebidos:', { name, whatsapp, email, cpf })
+    console.log('Dados recebidos:', { name, whatsapp, email, cpf, quantidade_boloes })
 
     // Validar dados obrigatórios
     if (!name || !whatsapp || !email || !cpf) {
@@ -42,192 +142,267 @@ exports.handler = async (event, context) => {
       }
     }
 
+    // Validar e normalizar quantidade_boloes
+    const quantidade = Math.max(1, Math.min(100, parseInt(quantidade_boloes) || 1))
+    
+    if (isNaN(quantidade) || quantidade < 1 || quantidade > 100) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Quantidade de bolões deve ser entre 1 e 100' }),
+      }
+    }
+
     // Configurações do NocoDB
     const nocodbBaseUrl = process.env.NOCODB_BASE_URL
     const nocodbToken = process.env.NOCODB_TOKEN
     const nocodbProject = process.env.NOCODB_PROJECT || 'default'
-    const nocodbTable = process.env.NOCODB_TABLE || 'leads'
 
-    console.log('Configurações NocoDB:', {
-      baseUrl: nocodbBaseUrl ? 'Configurado' : 'Não configurado',
-      token: nocodbToken ? 'Configurado' : 'Não configurado',
-      project: nocodbProject,
-      table: nocodbTable
-    })
+    if (!nocodbBaseUrl || !nocodbToken) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Configuração do banco de dados não encontrada' }),
+      }
+    }
 
-    // Gerar número da sorte
-    const luckyNumber = Math.floor(Math.random() * 10000) + 1
+    // Normalizar CPF
+    const cpfSemMascara = String(cpf.replace(/\D/g, ''))
+    const cpfFormatado = cpfSemMascara.padStart(11, '0')
 
-    console.log('Número da sorte gerado:', luckyNumber)
+    const timestamp = new Date().toISOString()
+    const participantesUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/participantes`
+    const numerosUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/numeros_sorte`
 
-    // Tentar salvar no NocoDB se configurado
-    if (nocodbBaseUrl && nocodbToken) {
+    // Buscar participante existente
+    const participanteExistente = await buscarParticipante(
+      nocodbBaseUrl,
+      nocodbToken,
+      nocodbProject,
+      cpfFormatado
+    )
+
+    let participanteId
+    let ehPrimeiraCompra = false
+    let totalBoloes = quantidade
+
+    if (participanteExistente) {
+      // Participante já existe - atualizar
+      participanteId = participanteExistente.id || participanteExistente.Id
+      totalBoloes = (participanteExistente.total_boloes || participanteExistente.total_boloes || 0) + quantidade
+
+      console.log(`Participante existente encontrado (ID: ${participanteId}). Total de bolões será: ${totalBoloes}`)
+
+      // Atualizar participante
+      const updateUrl = `${participantesUrl}/${participanteId}`
+      await fetch(updateUrl, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'xc-token': nocodbToken,
+        },
+        body: JSON.stringify({
+          total_boloes: totalBoloes,
+          atualizado_em: timestamp,
+        }),
+      })
+    } else {
+      // Criar novo participante
+      ehPrimeiraCompra = true
+      console.log('Criando novo participante')
+
+      const participanteData = {
+        usuario: name,
+        whatsapp: whatsapp,
+        email: email,
+        cpf: cpfFormatado,
+        total_boloes: quantidade,
+        criado_em: timestamp,
+        atualizado_em: timestamp,
+      }
+
+      const createResponse = await fetch(participantesUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'xc-token': nocodbToken,
+        },
+        body: JSON.stringify(participanteData),
+      })
+
+      if (!createResponse.ok) {
+        const errorText = await createResponse.text()
+        console.error('Erro ao criar participante:', errorText)
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({
+            error: 'Erro ao criar participante',
+            message: 'Não foi possível criar seu cadastro. Por favor, tente novamente.',
+          }),
+        }
+      }
+
+      const participanteCriado = await createResponse.json()
+      participanteId = participanteCriado.id || participanteCriado.Id
+      console.log(`Participante criado com ID: ${participanteId}`)
+    }
+
+    // Buscar números existentes do participante
+    const numerosExistentes = await buscarNumerosExistentes(
+      nocodbBaseUrl,
+      nocodbToken,
+      nocodbProject,
+      cpfFormatado
+    )
+
+    console.log(`Números existentes encontrados: ${numerosExistentes.length}`)
+
+    // Gerar novos números únicos
+    const novosNumeros = gerarNumerosUnicos(quantidade, cpfFormatado, numerosExistentes)
+    
+    if (novosNumeros.length === 0) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({
+          error: 'Erro ao gerar números da sorte',
+          message: 'Não foi possível gerar números únicos. Por favor, tente novamente.',
+        }),
+      }
+    }
+
+    console.log(`Números gerados: ${novosNumeros.join(', ')}`)
+
+    // Buscar sequência atual do participante
+    const numerosExistentesResponse = await fetch(
+      `${numerosUrl}?where=(cpf,eq,"${cpfFormatado}")&sort=-bolao_sequencia&limit=1`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'xc-token': nocodbToken,
+        },
+      }
+    )
+
+    let proximaSequencia = 1
+    if (numerosExistentesResponse.ok) {
+      const sequenciaData = await numerosExistentesResponse.json()
+      if (sequenciaData.list && sequenciaData.list.length > 0) {
+        const ultimaSequencia = sequenciaData.list[0].bolao_sequencia || sequenciaData.list[0].bolao_sequencia || 0
+        proximaSequencia = ultimaSequencia + 1
+      }
+    }
+
+    // Criar registros de números da sorte
+    const numerosParaSalvar = novosNumeros.map((numero, index) => ({
+      participante_id: participanteId,
+      cpf: cpfFormatado,
+      numero_sorte: numero,
+      numero_formatado: numero.toString().padStart(4, '0'),
+      bolao_sequencia: proximaSequencia + index,
+      origem: 'landing_page',
+      status: 'ativo',
+      criado_em: timestamp,
+    }))
+
+    // Salvar cada número da sorte
+    const numerosSalvos = []
+    for (const numeroData of numerosParaSalvar) {
       try {
-        // Remover máscara do CPF (deixar apenas números) para salvar no NocoDB
-        const cpfSemMascara = String(cpf.replace(/\D/g, ''))
-        
-        // Garantir que o CPF tenha 11 dígitos (adicionar zero à esquerda se necessário)
-        // Isso preserva zeros à esquerda que podem ser perdidos
-        const cpfFormatado = cpfSemMascara.padStart(11, '0')
-        
-        // CPF sem zeros à esquerda (para compatibilidade com dados antigos salvos como número)
-        const cpfSemZeros = cpfSemMascara
-        
-        // Verificar se CPF já existe no banco de dados
-        const nocodbApiUrl = `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`
-        
-        // Tentar buscar primeiro com CPF formatado (com zeros) - para dados novos salvos como texto
-        let checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfFormatado}")`
-        
-        console.log('Verificando se CPF já existe (formato com zeros):', cpfFormatado)
-        console.log('URL de verificação:', checkCpfUrl)
-        
-        let checkCpfResponse = await fetch(checkCpfUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'xc-token': nocodbToken,
-          },
-        })
-        
-        let existingData = null
-        
-        if (checkCpfResponse.ok) {
-          existingData = await checkCpfResponse.json()
-        }
-        
-        // Se não encontrou com zeros, tentar sem zeros (para dados antigos salvos como número)
-        if (!existingData || !existingData.list || existingData.list.length === 0) {
-          console.log('Não encontrado com zeros, tentando sem zeros (compatibilidade com dados antigos):', cpfSemZeros)
-          checkCpfUrl = `${nocodbApiUrl}?where=(cpf,eq,"${cpfSemZeros}")`
-          
-          checkCpfResponse = await fetch(checkCpfUrl, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'xc-token': nocodbToken,
-            },
-          })
-          
-          if (checkCpfResponse.ok) {
-            existingData = await checkCpfResponse.json()
-          } else {
-            console.warn('Erro ao verificar CPF existente, continuando com cadastro')
-          }
-        }
-        
-        // Se encontrar registros com o mesmo CPF, retornar erro
-        if (existingData && existingData.list && existingData.list.length > 0) {
-          console.log('CPF já cadastrado:', cpfFormatado)
-          console.log('Registros encontrados:', existingData.list.length)
-          return {
-            statusCode: 409,
-            headers,
-            body: JSON.stringify({
-              error: 'CPF já cadastrado',
-              message: 'Este CPF já está cadastrado em nosso sistema. Não é possível realizar mais de um cadastro com o mesmo CPF. Se você já se cadastrou anteriormente, utilize o mesmo CPF para verificar seu número da sorte.',
-            }),
-          }
-        }
-        
-        const dataToSave = {
-          "usuario": name,
-          "whatsapp": whatsapp,
-          "email": email,
-          "cpf": cpfFormatado, // Garantir que seja string com zeros à esquerda preservados
-          "numero_sorte": luckyNumber,
-          "criado_em": new Date().toISOString(),
-        }
-        
-        console.log('Tentando salvar no NocoDB:', dataToSave)
-        
-        console.log('URL da API NocoDB:', nocodbApiUrl)
-        
-        const nocodbResponse = await fetch(nocodbApiUrl, {
+        const numeroResponse = await fetch(numerosUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'xc-token': nocodbToken,
           },
-          body: JSON.stringify(dataToSave),
+          body: JSON.stringify(numeroData),
         })
 
-        console.log('Status da resposta NocoDB:', nocodbResponse.status)
-
-        if (nocodbResponse.ok) {
-          const savedData = await nocodbResponse.json()
-          console.log('Dados salvos no NocoDB:', savedData)
-
-          // Enviar dados para N8N via webhook
-          const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL
-          if (n8nWebhookUrl) {
-            try {
-              const n8nPayload = {
-                nome: name,
-                whatsapp: whatsapp,
-                email: email,
-                numero_sorte: luckyNumber.toString().padStart(4, '0'),
-              }
-
-              console.log('Enviando dados para N8N:', n8nPayload)
-
-              // Criar AbortController para timeout de 10 segundos
-              const controller = new AbortController()
-              const timeoutId = setTimeout(() => controller.abort(), 10000)
-
-              const n8nResponse = await fetch(n8nWebhookUrl, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(n8nPayload),
-                signal: controller.signal,
-              })
-
-              clearTimeout(timeoutId)
-
-              if (n8nResponse.ok) {
-                console.log('Mensagem enviada para N8N com sucesso')
-              } else {
-                const n8nErrorText = await n8nResponse.text()
-                console.error('Erro ao enviar para N8N - Status:', n8nResponse.status, 'Resposta:', n8nErrorText)
-              }
-            } catch (n8nError) {
-              if (n8nError.name === 'AbortError') {
-                console.error('Timeout ao enviar para N8N (10 segundos)')
-              } else {
-                console.error('Erro ao enviar para N8N:', n8nError.message)
-              }
-              // Não bloqueia o cadastro se N8N falhar
-            }
-          } else {
-            console.log('N8N_WEBHOOK_URL não configurado - pulando envio para N8N')
-          }
+        if (numeroResponse.ok) {
+          const numeroSalvo = await numeroResponse.json()
+          numerosSalvos.push(numeroData.numero_formatado)
         } else {
-          const errorText = await nocodbResponse.text()
-          console.error('Erro ao salvar no NocoDB - Status:', nocodbResponse.status)
-          console.error('Erro ao salvar no NocoDB - Resposta:', errorText)
-          console.error('URL utilizada:', `${nocodbBaseUrl}/api/v1/db/data/noco/${nocodbProject}/${nocodbTable}`)
-          console.error('Payload enviado:', JSON.stringify(dataToSave))
-          
-          // Retornar erro se NocoDB falhar
-          return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({
-              error: 'Erro ao salvar no banco de dados',
-              message: 'Não foi possível salvar seus dados. Por favor, tente novamente.',
-              details: nocodbResponse.status === 401 ? 'Token inválido ou sem permissão' : 
-                       nocodbResponse.status === 404 ? 'Projeto ou tabela não encontrado' :
-                       'Erro desconhecido'
-            }),
-          }
+          const errorText = await numeroResponse.text()
+          console.error(`Erro ao salvar número ${numeroData.numero_formatado}:`, errorText)
         }
-      } catch (nocodbError) {
-        console.error('Erro na integração com NocoDB:', nocodbError)
+      } catch (error) {
+        console.error(`Erro ao salvar número ${numeroData.numero_formatado}:`, error)
       }
-    } else {
-      console.log('NocoDB não configurado - salvando apenas em memória')
+    }
+
+    if (numerosSalvos.length === 0) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({
+          error: 'Erro ao salvar números da sorte',
+          message: 'Não foi possível salvar seus números. Por favor, tente novamente.',
+        }),
+      }
+    }
+
+    // Buscar todos os números do participante para retornar
+    const todosNumerosResponse = await fetch(
+      `${numerosUrl}?where=(cpf,eq,"${cpfFormatado}")&sort=bolao_sequencia`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'xc-token': nocodbToken,
+        },
+      }
+    )
+
+    let todosNumeros = numerosSalvos
+    if (todosNumerosResponse.ok) {
+      const todosData = await todosNumerosResponse.json()
+      if (todosData.list && todosData.list.length > 0) {
+        todosNumeros = todosData.list.map(record => 
+          record.numero_formatado || record.numero_sorte?.toString().padStart(4, '0')
+        )
+      }
+    }
+
+    // Enviar dados para N8N via webhook (opcional)
+    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL
+    if (n8nWebhookUrl) {
+      try {
+        const n8nPayload = {
+          nome: name,
+          whatsapp: whatsapp,
+          email: email,
+          numeros_sorte: todosNumeros,
+          quantidade_boloes: quantidade,
+          total_boloes: totalBoloes,
+          eh_primeira_compra: ehPrimeiraCompra,
+        }
+
+        console.log('Enviando dados para N8N:', n8nPayload)
+
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+        await fetch(n8nWebhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(n8nPayload),
+          signal: controller.signal,
+        })
+
+        clearTimeout(timeoutId)
+        console.log('Mensagem enviada para N8N com sucesso')
+      } catch (n8nError) {
+        if (n8nError.name === 'AbortError') {
+          console.error('Timeout ao enviar para N8N (10 segundos)')
+        } else {
+          console.error('Erro ao enviar para N8N:', n8nError.message)
+        }
+        // Não bloqueia o cadastro se N8N falhar
+      }
     }
 
     // Resposta de sucesso
@@ -236,8 +411,13 @@ exports.handler = async (event, context) => {
       headers,
       body: JSON.stringify({
         success: true,
-        NumeroDaSorte: luckyNumber.toString().padStart(4, '0'),
-        message: 'Cadastro realizado com sucesso!',
+        numeros_sorte: todosNumeros,
+        novos_numeros: numerosSalvos,
+        total_boloes: totalBoloes,
+        eh_primeira_compra: ehPrimeiraCompra,
+        message: ehPrimeiraCompra 
+          ? `Cadastro realizado com sucesso! ${quantidade} número(s) da sorte gerado(s).`
+          : `Compra realizada com sucesso! ${quantidade} novo(s) número(s) da sorte adicionado(s).`,
       }),
     }
   } catch (error) {

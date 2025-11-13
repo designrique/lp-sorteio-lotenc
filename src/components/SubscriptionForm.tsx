@@ -7,6 +7,13 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Form,
   FormControl,
   FormField,
@@ -36,6 +43,13 @@ const formSchema = z.object({
     .string()
     .min(1, { message: 'CPF é obrigatório.' })
     .regex(cpfRegex, 'Formato de CPF inválido. Use o formato XXX.XXX.XXX-XX'),
+  quantidade_boloes: z
+    .string()
+    .min(1, { message: 'Quantidade de bolões é obrigatória.' })
+    .refine((val) => {
+      const num = parseInt(val)
+      return !isNaN(num) && num >= 1 && num <= 100
+    }, { message: 'Quantidade deve ser entre 1 e 100.' }),
 })
 
 const checkCpfSchema = z.object({
@@ -49,7 +63,7 @@ type SubscriptionFormValues = z.infer<typeof formSchema>
 type CheckCpfFormValues = z.infer<typeof checkCpfSchema>
 
 interface SubscriptionFormProps {
-  onSuccess: (luckyNumber: string) => void
+  onSuccess: (luckyNumbers: string[], totalBoloes: number, ehPrimeiraCompra: boolean) => void
 }
 
 export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
@@ -67,6 +81,7 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
       whatsapp: '',
       email: '',
       cpf: '',
+      quantidade_boloes: '1',
     },
   })
 
@@ -91,21 +106,25 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         
-        // Tratar erro de CPF duplicado
-        if (response.status === 409) {
-          throw new Error(errorData.message || 'Este CPF já está cadastrado em nosso sistema.')
-        }
+        // Nota: Não tratamos mais 409 como erro, pois agora permitimos múltiplas compras
         
         throw new Error(errorData.message || 'Falha ao registrar. Tente novamente.')
       }
 
       const result = await response.json()
 
+      const numerosSorte = result.numeros_sorte || (result.NumeroDaSorte ? [result.NumeroDaSorte] : [])
+      const totalBoloes = result.total_boloes || numerosSorte.length
+      const ehPrimeiraCompra = result.eh_primeira_compra !== false
+
       toast({
         title: 'Sucesso!',
-        description: 'Seu cadastro foi realizado.',
+        description: result.message || (ehPrimeiraCompra 
+          ? 'Seu cadastro foi realizado.' 
+          : 'Compra realizada com sucesso!'),
       })
-      onSuccess(result.NumeroDaSorte)
+      
+      onSuccess(numerosSorte, totalBoloes, ehPrimeiraCompra)
       form.reset()
       
       // Ocultar formulário de consulta temporariamente
@@ -147,7 +166,15 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
 
       const result = await response.json()
 
-      if (result.success && result.numero_sorte) {
+      if (result.success && result.numeros_sorte && result.numeros_sorte.length > 0) {
+        setLuckyNumberFound(result.numeros_sorte.join(', '))
+        toast({
+          variant: 'success',
+          title: 'Números encontrados!',
+          description: `${result.total_numeros || result.numeros_sorte.length} número(s) da sorte encontrado(s)`,
+        })
+      } else if (result.success && result.numero_sorte) {
+        // Compatibilidade com formato antigo
         setLuckyNumberFound(result.numero_sorte)
         toast({
           variant: 'success',
@@ -289,6 +316,43 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="quantidade_boloes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold">
+                        Quantidade de Bolões
+                      </FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <SelectTrigger className="h-12">
+                            <SelectValue placeholder="Selecione a quantidade" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} bolão{num > 1 ? 'ões' : ''}
+                              </SelectItem>
+                            ))}
+                            {Array.from({ length: 9 }, (_, i) => (i + 1) * 10).map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} bolões
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                      <p className="text-xs text-muted-foreground">
+                        Cada bolão gera um número da sorte único. Quanto mais bolões, maiores suas chances!
+                      </p>
+                    </FormItem>
+                  )}
+                />
                 <Button
                   type="submit"
                   disabled={isLoading}
@@ -368,8 +432,16 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
                 />
                 {luckyNumberFound && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                    <p className="text-sm text-green-800 mb-2">Seu número da sorte é:</p>
-                    <p className="text-3xl font-bold text-green-900">{luckyNumberFound}</p>
+                    <p className="text-sm text-green-800 mb-2">
+                      {luckyNumberFound.includes(',') ? 'Seus números da sorte são:' : 'Seu número da sorte é:'}
+                    </p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {luckyNumberFound.split(', ').map((numero, index) => (
+                        <p key={index} className="text-2xl sm:text-3xl font-bold text-green-900">
+                          {numero.trim()}
+                        </p>
+                      ))}
+                    </div>
                   </div>
                 )}
                 <Button

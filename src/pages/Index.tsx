@@ -6,10 +6,14 @@ import { cn } from '@/lib/utils'
 import { useScrollObserver } from '@/hooks/use-scroll-observer'
 
 const Index = () => {
-  const [luckyNumber, setLuckyNumber] = useState<string | null>(null)
+  const [luckyNumbers, setLuckyNumbers] = useState<string[] | null>(null)
+  const [totalBoloes, setTotalBoloes] = useState<number>(0)
+  const [ehPrimeiraCompra, setEhPrimeiraCompra] = useState<boolean>(true)
 
-  const handleSuccess = (number: string) => {
-    setLuckyNumber(number)
+  const handleSuccess = (numbers: string[], total: number, primeiraCompra: boolean) => {
+    setLuckyNumbers(numbers)
+    setTotalBoloes(total)
+    setEhPrimeiraCompra(primeiraCompra)
     setTimeout(() => {
       document
         .getElementById('result-section')
@@ -250,11 +254,15 @@ const Index = () => {
       </section>
 
       <div id="form-section">
-        {!luckyNumber ? (
+        {!luckyNumbers ? (
           <SubscriptionForm onSuccess={handleSuccess} />
         ) : (
           <div id="result-section">
-            <ResultSection luckyNumber={luckyNumber} />
+            <ResultSection 
+              luckyNumbers={luckyNumbers} 
+              totalBoloes={totalBoloes}
+              ehPrimeiraCompra={ehPrimeiraCompra}
+            />
           </div>
         )}
       </div>

@@ -29,6 +29,12 @@
   status = 200
   force = true
 
+[[redirects]]
+  from = "/api/test-connection"
+  to = "/.netlify/functions/test-connection"
+  status = 200
+  force = true
+
 # Exceção para funções Netlify - não redirecionar
 [[redirects]]
   from = "/.netlify/functions/*"
