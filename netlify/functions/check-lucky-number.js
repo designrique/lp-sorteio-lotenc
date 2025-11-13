@@ -162,20 +162,48 @@ exports.handler = async (event, context) => {
           })
           
           if (numerosData.list && numerosData.list.length > 0) {
-            // Evitar duplicatas se já encontrou números em busca anterior
-            const novosNumeros = numerosData.list.map(record => {
-              // Garantir que o CPF do registro corresponde ao buscado
-              const recordCpf = String(record.cpf || '').trim()
-              const cpfBuscadoNormalizado = cpfVariant.padStart(11, '0')
+            console.log(`Encontrados ${numerosData.list.length} registro(s) na busca. Processando...`)
+            
+            // Processar todos os registros encontrados
+            const novosNumeros = numerosData.list.map((record, index) => {
+              // Log detalhado do registro
+              console.log(`Registro ${index + 1}:`, {
+                cpf: record.cpf,
+                cpfTipo: typeof record.cpf,
+                numero_sorte: record.numero_sorte,
+                numero_formatado: record.numero_formatado,
+                bolao_sequencia: record.bolao_sequencia,
+                participante_id: record.participante_id,
+                todosCampos: Object.keys(record),
+              })
+              
+              // Normalizar CPF do registro para comparação
+              const recordCpfNormalizado = String(record.cpf || '').trim().replace(/\D/g, '').padStart(11, '0')
+              const cpfBuscadoNormalizado = cpfVariant.replace(/\D/g, '').padStart(11, '0')
+              
+              console.log(`Comparando CPFs: registro="${recordCpfNormalizado}" vs buscado="${cpfBuscadoNormalizado}"`)
               
               // Verificar se o CPF corresponde (normalizado)
-              if (recordCpf.replace(/\D/g, '').padStart(11, '0') !== cpfBuscadoNormalizado) {
+              if (recordCpfNormalizado !== cpfBuscadoNormalizado) {
+                console.log(`⚠️ CPF não corresponde - ignorando registro ${index + 1}`)
                 return null // Ignorar se não corresponder
               }
               
-              const numeroFormatado = record.numero_formatado || 
-                                     (record.numero_sorte ? record.numero_sorte.toString().padStart(4, '0') : null) ||
-                                     String(record.numero_sorte || '').padStart(4, '0')
+              // Formatar número da sorte
+              let numeroFormatado = null
+              if (record.numero_formatado) {
+                numeroFormatado = String(record.numero_formatado).padStart(4, '0')
+              } else if (record.numero_sorte !== undefined && record.numero_sorte !== null) {
+                numeroFormatado = String(record.numero_sorte).padStart(4, '0')
+              }
+              
+              if (!numeroFormatado) {
+                console.log(`⚠️ Não foi possível formatar número do registro ${index + 1}`)
+                return null
+              }
+              
+              console.log(`✅ Número formatado: ${numeroFormatado}`)
+              
               return {
                 numero: numeroFormatado,
                 sequencia: record.bolao_sequencia || null,
@@ -185,6 +213,8 @@ exports.handler = async (event, context) => {
                 participante_id: record.participante_id || record.participante_Id || null,
               }
             }).filter(n => n !== null) // Remover nulls
+            
+            console.log(`Números válidos após processamento: ${novosNumeros.length}`)
             
             // Adicionar apenas números novos (evitar duplicatas)
             const numerosExistentes = new Set(numerosSorte.map(n => n.numero))
