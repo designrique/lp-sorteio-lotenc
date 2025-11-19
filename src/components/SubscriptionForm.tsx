@@ -104,18 +104,35 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
+        let errorData = {}
+        try {
+          errorData = await response.json()
+        } catch (e) {
+          // Se não conseguir fazer parse do JSON, usar a mensagem padrão
+          console.error('Erro ao fazer parse da resposta de erro:', e)
+        }
         
         // Nota: Não tratamos mais 409 como erro, pois agora permitimos múltiplas compras
         
-        throw new Error(errorData.message || 'Falha ao registrar. Tente novamente.')
+        throw new Error(errorData.message || errorData.error || 'Falha ao registrar. Tente novamente.')
       }
 
-      const result = await response.json()
+      let result = {}
+      try {
+        result = await response.json()
+      } catch (e) {
+        console.error('Erro ao fazer parse da resposta:', e)
+        throw new Error('Resposta inválida do servidor. Por favor, tente novamente.')
+      }
 
       const numerosSorte = result.numeros_sorte || (result.NumeroDaSorte ? [result.NumeroDaSorte] : [])
-      const totalBoloes = result.total_boloes || numerosSorte.length
+      const totalBoloes = result.total_boloes || numerosSorte.length || 0
       const ehPrimeiraCompra = result.eh_primeira_compra !== false
+
+      // Validar se temos números da sorte antes de prosseguir
+      if (!numerosSorte || numerosSorte.length === 0) {
+        throw new Error('Nenhum número da sorte foi gerado. Por favor, tente novamente.')
+      }
 
       toast({
         title: 'Sucesso!',
@@ -135,6 +152,7 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
         setShowCheckForm(true)
       }, 30000)
     } catch (error) {
+      console.error('Erro no cadastro:', error)
       const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro ao tentar cadastrar. Por favor, tente novamente mais tarde.'
       
       toast({

@@ -8,6 +8,28 @@ interface ResultSectionProps {
 }
 
 export const ResultSection = ({ luckyNumbers, totalBoloes, ehPrimeiraCompra }: ResultSectionProps) => {
+  // Validação para evitar erros quando o array está vazio
+  if (!luckyNumbers || luckyNumbers.length === 0) {
+    return (
+      <section className={cn('py-12 sm:py-16 md:py-24 animate-fade-in-up px-4')}>
+        <Card className="max-w-2xl mx-auto text-center bg-primary shadow-soft">
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-foreground">
+              {ehPrimeiraCompra 
+                ? 'Parabéns, Seu Cadastro Foi Realizado!'
+                : 'Compra Realizada com Sucesso!'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 px-4 sm:px-6 pb-6 sm:pb-8">
+            <p className="text-base sm:text-lg text-primary-foreground">
+              Seu número da sorte será gerado em breve. Fique atento ao seu WhatsApp e e-mail!
+            </p>
+          </CardContent>
+        </Card>
+      </section>
+    )
+  }
+
   const temMultiplosNumeros = luckyNumbers.length > 1
 
   return (

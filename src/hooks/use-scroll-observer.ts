@@ -21,9 +21,16 @@ export const useScrollObserver = <T extends HTMLElement>(
     const element = ref.current
     if (!element) return
 
+    // Verificar se IntersectionObserver está disponível (compatibilidade com navegadores antigos)
+    if (typeof IntersectionObserver === 'undefined') {
+      // Fallback: marcar como visível imediatamente se não houver suporte
+      setIsVisible(true)
+      return
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsVisible(true)
           if (triggerOnce) {
             observer.unobserve(element)
@@ -44,7 +51,7 @@ export const useScrollObserver = <T extends HTMLElement>(
         observer.unobserve(element)
       }
     }
-  }, [ref, threshold, rootMargin, triggerOnce])
+  }, [threshold, rootMargin, triggerOnce])
 
   return { ref, isVisible }
 }
