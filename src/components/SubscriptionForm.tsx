@@ -356,14 +356,9 @@ export const SubscriptionForm = ({ onSuccess }: SubscriptionFormProps) => {
                             <SelectValue placeholder="Selecione a quantidade" />
                           </SelectTrigger>
                           <SelectContent>
-                            {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                            {Array.from({ length: 100 }, (_, i) => i + 1).map((num) => (
                               <SelectItem key={num} value={num.toString()}>
                                 {num} {num === 1 ? 'bolão' : 'bolões'}
-                              </SelectItem>
-                            ))}
-                            {Array.from({ length: 9 }, (_, i) => (i + 1) * 10).map((num) => (
-                              <SelectItem key={num} value={num.toString()}>
-                                {num} bolões
                               </SelectItem>
                             ))}
                           </SelectContent>
